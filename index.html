@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Juego para adivinar los 150 Pokémon originales. ¡Perfecto para fans de Pokémon!">
+    <meta name="theme-color" content="#2A75BB">
+    <title>¿Quién es este Pokémon? - Juego Interactivo</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <!-- Estilos -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 selection:bg-yellow-200">
+
+    <div id="game-container" class="w-full max-w-md mx-auto">
+
+        <!-- PANTALLA INICIO -->
+        <div id="start-screen" class="card flex flex-col items-center justify-center min-h-[400px]">
+            <div class="mb-6 relative">
+                <h1 class="text-5xl font-black text-[#2A75BB] tracking-tighter logo-title">
+                    ADIVINA
+                </h1>
+                <h2 class="text-3xl font-black text-gray-700 mt-[-5px]">EL POKÉMON</h2>
+            </div>
+
+            <p class="text-gray-600 mb-4 text-lg font-bold">¿Podrás con los 150 originales?</p>
+
+            <!-- High Score Display -->
+            <div id="high-score-display" class="bg-yellow-50 border-2 border-yellow-200 rounded-xl px-6 py-3 mb-6 hidden">
+                <p class="text-xs font-bold text-yellow-700 uppercase mb-1">Mejor Puntuación</p>
+                <p class="text-2xl font-black text-yellow-600">
+                    <span id="high-score-value">0</span><span class="text-sm text-yellow-500">/150</span>
+                </p>
+            </div>
+
+            <button id="start-button"
+                    class="btn btn-start w-full py-5 text-2xl animate-pop"
+                    aria-label="Comenzar juego">
+                ¡JUGAR AHORA!
+            </button>
+
+            <p class="mt-6 text-sm text-gray-400 font-bold">🔊 Activa el sonido para mejor experiencia</p>
+        </div>
+
+        <!-- PANTALLA JUEGO -->
+        <div id="game-screen" class="hidden">
+            <div id="game-card" class="card">
+
+                <!-- Cabecera con Marcador -->
+                <div class="flex justify-between items-end mb-2">
+                    <div class="flex flex-col items-start">
+                        <div class="text-xs font-black text-gray-400 uppercase tracking-wider">Puntuación</div>
+                        <div class="text-3xl font-black text-[#2A75BB]">
+                            <span id="score-display">0</span><span class="text-gray-300 text-xl">/150</span>
+                        </div>
+                    </div>
+
+                    <!-- Racha -->
+                    <div id="streak-badge" class="streak-container opacity-0 transition-opacity duration-300">
+                        <span>🔥</span> <span id="streak-display">0</span> RACHA
+                    </div>
+                </div>
+
+                <!-- Imagen Pokémon -->
+                <div class="pokemon-image-container" role="img" aria-label="Silueta de Pokémon">
+                    <div id="loading-spinner" class="hidden" aria-label="Cargando"></div>
+                    <img id="pokemon-image"
+                         src=""
+                         alt="Silueta de Pokémon a adivinar"
+                         class="pokemon-image pokemon-silhouette">
+                </div>
+
+                <!-- Contador de progreso -->
+                <div class="mb-4 text-center">
+                    <p class="text-sm font-bold text-gray-500">
+                        Pokémon <span id="pokemon-counter">1</span> de 150
+                    </p>
+                </div>
+
+                <!-- Botones de opciones -->
+                <div id="options-container"
+                     class="grid grid-cols-1 gap-3"
+                     role="group"
+                     aria-label="Opciones de respuesta">
+                    <button class="btn option-button w-full bg-[#FFCB05] hover:bg-[#ffe16b] py-4 px-2 text-xl leading-none min-h-[64px] flex items-center justify-center" tabindex="0"></button>
+                    <button class="btn option-button w-full bg-[#FFCB05] hover:bg-[#ffe16b] py-4 px-2 text-xl leading-none min-h-[64px] flex items-center justify-center" tabindex="0"></button>
+                    <button class="btn option-button w-full bg-[#FFCB05] hover:bg-[#ffe16b] py-4 px-2 text-xl leading-none min-h-[64px] flex items-center justify-center" tabindex="0"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA FINAL -->
+        <div id="end-screen" class="hidden card flex flex-col items-center justify-center">
+            <h1 class="text-4xl font-black text-[#2A75BB] mb-2 logo-title">¡FIN DEL JUEGO!</h1>
+
+            <!-- Mensaje de felicitación dinámico -->
+            <p id="congratulations-message" class="text-lg font-bold text-gray-600 mb-4"></p>
+
+            <div class="bg-blue-50 rounded-xl p-6 w-full mb-6 border-2 border-blue-100">
+                <p class="text-gray-500 font-bold uppercase text-sm mb-1">Resultado Final</p>
+                <div class="text-6xl font-black text-[#2A75BB] mb-4">
+                    <span id="final-score">0</span><span class="text-3xl text-gray-400">/150</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white p-3 rounded-lg border border-green-200">
+                        <div class="text-green-500 text-xs font-black uppercase">Acertados</div>
+                        <div id="final-correct" class="text-2xl font-black text-green-600">0</div>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg border border-red-200">
+                        <div class="text-red-500 text-xs font-black uppercase">Fallados</div>
+                        <div id="final-failed" class="text-2xl font-black text-red-500">0</div>
+                    </div>
+                </div>
+
+                <!-- Mostrar si es nuevo récord -->
+                <div id="new-record-badge" class="hidden mt-4 bg-yellow-100 border-2 border-yellow-400 rounded-lg p-3 animate-pop">
+                    <p class="text-yellow-700 font-black text-sm">🏆 ¡NUEVO RÉCORD!</p>
+                </div>
+            </div>
+
+            <button id="play-again-button"
+                    class="btn btn-start w-full py-4 text-xl"
+                    aria-label="Volver a jugar">
+                VOLVER A JUGAR ↺
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript del juego -->
+    <script src="game.js"></script>
+</body>
+</html>
