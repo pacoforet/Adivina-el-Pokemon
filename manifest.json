@@ -1,0 +1,28 @@
+{
+  "name": "Adivina el Pokémon",
+  "short_name": "Pokémon Quiz",
+  "description": "Juego para adivinar los 150 Pokémon originales. ¡Diviértete!",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#2A75BB",
+  "theme_color": "#2A75BB",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "entertainment", "education"],
+  "shortcuts": [
+    {
+      "name": "Nuevo Juego",
+      "short_name": "Jugar",
+      "description": "Iniciar un nuevo juego",
+      "url": "/index.html",
+      "icons": [{ "src": "icon.svg", "sizes": "any" }]
+    }
+  ]
+}

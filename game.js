@@ -26,7 +26,11 @@ const CONFIG = {
         SPRITE_URL: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/',
         CRY_URL: 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/'
     },
-    STORAGE_KEY: 'pokemon_game_high_score'
+    STORAGE_KEYS: {
+        HIGH_SCORE: 'pokemon_game_high_score',
+        GAME_STATE: 'pokemon_game_state',
+        MUTED: 'pokemon_game_muted'
+    }
 };
 
 const POKEMON_NAMES = [
@@ -60,7 +64,8 @@ const GameState = {
     failed: 0,
     streak: 0,
     isAnswering: false,
-    highScore: 0
+    highScore: 0,
+    isMuted: false
 };
 
 /* ============================================================================
@@ -99,7 +104,10 @@ const DOM = {
 
     // Botones
     startButton: document.getElementById('start-button'),
-    playAgainButton: document.getElementById('play-again-button')
+    playAgainButton: document.getElementById('play-again-button'),
+    muteButton: document.getElementById('mute-button'),
+    muteIcon: document.getElementById('mute-icon'),
+    restartButton: document.getElementById('restart-button')
 };
 
 /* ============================================================================
@@ -127,7 +135,7 @@ const AudioSystem = {
      * @param {number} duration - Duración en segundos
      */
     playTone(freq, type, duration) {
-        if (!this.context) return;
+        if (!this.context || GameState.isMuted) return;
 
         if (this.context.state === 'suspended') {
             this.context.resume();
@@ -168,6 +176,8 @@ const AudioSystem = {
      * @param {number} id - ID del Pokémon
      */
     playPokemonCry(id) {
+        if (GameState.isMuted) return;
+
         const audio = new Audio(`${CONFIG.API.CRY_URL}${id}.ogg`);
         audio.volume = CONFIG.SOUND_VOLUME;
         audio.play().catch(e => console.log('No se pudo reproducir el grito:', e));
@@ -178,7 +188,7 @@ const AudioSystem = {
      * @param {string} name - Nombre del Pokémon
      */
     speak(name) {
-        if (!('speechSynthesis' in window)) return;
+        if (!('speechSynthesis' in window) || GameState.isMuted) return;
 
         const utterance = new SpeechSynthesisUtterance(`¡Es ${name}!`);
         utterance.lang = 'es-ES';
@@ -186,7 +196,17 @@ const AudioSystem = {
         utterance.pitch = CONFIG.SPEECH_PITCH;
 
         window.speechSynthesis.speak(utterance);
+    },
+
+    /**
+     * Toggles mute state
+     */
+    toggleMute() {
+        GameState.isMuted = !GameState.isMuted;
+        Storage.setMuted(GameState.isMuted);
+        UIController.updateMuteButton();
     }
+}
 };
 
 /* ============================================================================
@@ -200,7 +220,7 @@ const Storage = {
      */
     getHighScore() {
         try {
-            return parseInt(localStorage.getItem(CONFIG.STORAGE_KEY)) || 0;
+            return parseInt(localStorage.getItem(CONFIG.STORAGE_KEYS.HIGH_SCORE)) || 0;
         } catch (e) {
             console.warn('No se pudo acceder a localStorage:', e);
             return 0;
@@ -216,13 +236,82 @@ const Storage = {
         try {
             const currentHighScore = this.getHighScore();
             if (score > currentHighScore) {
-                localStorage.setItem(CONFIG.STORAGE_KEY, score.toString());
+                localStorage.setItem(CONFIG.STORAGE_KEYS.HIGH_SCORE, score.toString());
                 return true;
             }
             return false;
         } catch (e) {
             console.warn('No se pudo guardar en localStorage:', e);
             return false;
+        }
+    },
+
+    /**
+     * Obtiene el estado de mute
+     * @returns {boolean}
+     */
+    getMuted() {
+        try {
+            const muted = localStorage.getItem(CONFIG.STORAGE_KEYS.MUTED);
+            return muted === 'true';
+        } catch (e) {
+            console.warn('No se pudo acceder a localStorage:', e);
+            return false;
+        }
+    },
+
+    /**
+     * Guarda el estado de mute
+     * @param {boolean} isMuted
+     */
+    setMuted(isMuted) {
+        try {
+            localStorage.setItem(CONFIG.STORAGE_KEYS.MUTED, isMuted.toString());
+        } catch (e) {
+            console.warn('No se pudo guardar en localStorage:', e);
+        }
+    },
+
+    /**
+     * Guarda el estado del juego
+     */
+    saveGameState() {
+        try {
+            const state = {
+                shuffledPokemon: GameState.shuffledPokemon,
+                currentPokemonIndex: GameState.currentPokemonIndex,
+                score: GameState.score,
+                failed: GameState.failed,
+                streak: GameState.streak
+            };
+            localStorage.setItem(CONFIG.STORAGE_KEYS.GAME_STATE, JSON.stringify(state));
+        } catch (e) {
+            console.warn('No se pudo guardar el estado del juego:', e);
+        }
+    },
+
+    /**
+     * Carga el estado del juego
+     * @returns {Object|null}
+     */
+    loadGameState() {
+        try {
+            const state = localStorage.getItem(CONFIG.STORAGE_KEYS.GAME_STATE);
+            return state ? JSON.parse(state) : null;
+        } catch (e) {
+            console.warn('No se pudo cargar el estado del juego:', e);
+            return null;
+        }
+    },
+
+    /**
+     * Limpia el estado del juego guardado
+     */
+    clearGameState() {
+        try {
+            localStorage.removeItem(CONFIG.STORAGE_KEYS.GAME_STATE);
+        } catch (e) {
+            console.warn('No se pudo limpiar el estado del juego:', e);
         }
     }
 };
@@ -382,11 +471,14 @@ const UIController = {
      */
     setupOptions(options) {
         DOM.optionButtons.forEach((btn, idx) => {
-            btn.textContent = options[idx];
-            btn.dataset.name = options[idx];
+            // Limpiar todas las clases y estilos previos
             btn.className = 'btn option-button w-full bg-[#FFCB05] hover:bg-[#ffe16b] py-4 px-2 text-xl leading-none min-h-[64px] flex items-center justify-center';
             btn.disabled = false;
-            btn.style.opacity = '1';
+            btn.removeAttribute('style'); // Eliminar todos los estilos inline
+
+            // Configurar contenido
+            btn.textContent = options[idx];
+            btn.dataset.name = options[idx];
         });
     },
 
@@ -471,6 +563,17 @@ const UIController = {
         } else {
             DOM.highScoreDisplay.classList.add('hidden');
         }
+    },
+
+    /**
+     * Actualiza el botón de mute según el estado
+     */
+    updateMuteButton() {
+        if (DOM.muteIcon) {
+            DOM.muteIcon.textContent = GameState.isMuted ? '🔇' : '🔊';
+            DOM.muteButton.setAttribute('aria-label',
+                GameState.isMuted ? 'Activar sonido' : 'Silenciar sonido');
+        }
     }
 };
 
@@ -480,31 +583,54 @@ const UIController = {
 
 const GameController = {
     /**
-     * Inicializa un nuevo juego
+     * Inicializa o resume el juego
+     * @param {boolean} forceNew - Forzar nuevo juego ignorando estado guardado
      */
-    startGame() {
-        // Reiniciar estado
-        GameState.score = 0;
-        GameState.failed = 0;
-        GameState.streak = 0;
-        GameState.currentPokemonIndex = 0;
-        GameState.isAnswering = false;
-
-        // Mezclar Pokémon
-        GameState.shuffledPokemon = Utils.shuffleArray(GameState.pokemonData);
-
+    startGame(forceNew = false) {
         // Inicializar audio
         AudioSystem.init();
         if (AudioSystem.context && AudioSystem.context.state === 'suspended') {
             AudioSystem.context.resume();
         }
 
+        // Intentar cargar estado guardado
+        const savedState = !forceNew ? Storage.loadGameState() : null;
+
+        if (savedState && savedState.currentPokemonIndex < CONFIG.TOTAL_POKEMON) {
+            // Resumir juego guardado
+            GameState.shuffledPokemon = savedState.shuffledPokemon;
+            GameState.currentPokemonIndex = savedState.currentPokemonIndex;
+            GameState.score = savedState.score;
+            GameState.failed = savedState.failed;
+            GameState.streak = savedState.streak;
+            GameState.isAnswering = false;
+        } else {
+            // Nuevo juego
+            GameState.score = 0;
+            GameState.failed = 0;
+            GameState.streak = 0;
+            GameState.currentPokemonIndex = 0;
+            GameState.isAnswering = false;
+            GameState.shuffledPokemon = Utils.shuffleArray(GameState.pokemonData);
+            Storage.clearGameState();
+        }
+
         // Mostrar pantalla de juego
         UIController.showScreen('game');
         UIController.updateDisplays();
 
-        // Cargar primer nivel
+        // Cargar nivel actual
         this.loadLevel();
+    },
+
+    /**
+     * Reinicia el juego desde cero
+     */
+    restartGame() {
+        if (confirm('¿Estás seguro de que quieres reiniciar el juego desde el principio?')) {
+            Storage.clearGameState();
+            this.startGame(true);
+        }
     },
 
     /**
@@ -596,9 +722,13 @@ const GameController = {
         // Actualizar UI
         UIController.updateDisplays();
 
+        // Guardar estado
+        Storage.saveGameState();
+
         // Pasar al siguiente nivel
         setTimeout(() => {
             GameState.currentPokemonIndex++;
+            Storage.saveGameState();
             this.loadLevel();
         }, CONFIG.CORRECT_REVEAL_DELAY);
     },
@@ -619,6 +749,9 @@ const GameController = {
         // Actualizar UI
         UIController.updateDisplays();
 
+        // Guardar estado
+        Storage.saveGameState();
+
         // Permitir reintentar después de la animación
         setTimeout(() => {
             GameState.isAnswering = false;
@@ -629,6 +762,8 @@ const GameController = {
      * Finaliza el juego
      */
     endGame() {
+        // Limpiar estado guardado al finalizar
+        Storage.clearGameState();
         UIController.showEndScreen();
     }
 };
@@ -645,15 +780,33 @@ document.addEventListener('DOMContentLoaded', () => {
     GameState.highScore = Storage.getHighScore();
     UIController.updateHighScoreDisplay();
 
-    // Event listeners
+    // Cargar estado de mute
+    GameState.isMuted = Storage.getMuted();
+    UIController.updateMuteButton();
+
+    // Event listeners - Botones principales
     DOM.startButton.addEventListener('click', () => {
         GameController.startGame();
     });
 
     DOM.playAgainButton.addEventListener('click', () => {
-        GameController.startGame();
+        GameController.startGame(true); // Forzar nuevo juego
     });
 
+    // Event listeners - Botones de control
+    if (DOM.muteButton) {
+        DOM.muteButton.addEventListener('click', () => {
+            AudioSystem.toggleMute();
+        });
+    }
+
+    if (DOM.restartButton) {
+        DOM.restartButton.addEventListener('click', () => {
+            GameController.restartGame();
+        });
+    }
+
+    // Event listeners - Botones de opciones
     DOM.optionButtons.forEach(button => {
         button.addEventListener('click', (e) => {
             GameController.handleAnswer(e);
@@ -673,5 +826,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Verificar si hay un juego en progreso
+    const savedState = Storage.loadGameState();
+    if (savedState && savedState.currentPokemonIndex < CONFIG.TOTAL_POKEMON) {
+        // Mostrar mensaje en la pantalla de inicio que hay un juego guardado
+        console.log('📱 Juego guardado detectado - se resumirá al hacer clic en Jugar');
+    }
+
     console.log('🎮 Juego de Pokémon cargado correctamente');
+    console.log('📱 PWA habilitada - Añade a pantalla de inicio para mejor experiencia');
 });

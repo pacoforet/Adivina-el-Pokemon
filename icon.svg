@@ -1,0 +1,30 @@
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="256" fill="#2A75BB"/>
+
+  <!-- Pokéball design -->
+  <g>
+    <!-- Top half (red) -->
+    <path d="M 256 256 L 256 50 A 206 206 0 0 1 462 256 Z" fill="#E3350D"/>
+
+    <!-- Bottom half (white) -->
+    <path d="M 256 256 L 256 462 A 206 206 0 0 1 50 256 Z" fill="#FFFFFF"/>
+
+    <!-- Right bottom (white) -->
+    <path d="M 256 256 L 462 256 A 206 206 0 0 0 256 462 Z" fill="#FFFFFF"/>
+
+    <!-- Center line -->
+    <rect x="50" y="236" width="412" height="40" fill="#1a1a1a"/>
+
+    <!-- Center circle background -->
+    <circle cx="256" cy="256" r="70" fill="#1a1a1a"/>
+    <circle cx="256" cy="256" r="55" fill="#FFFFFF"/>
+    <circle cx="256" cy="256" r="35" fill="#1a1a1a"/>
+
+    <!-- Pokéball shine -->
+    <ellipse cx="200" cy="150" rx="40" ry="50" fill="#FFFFFF" opacity="0.3"/>
+  </g>
+
+  <!-- Question mark -->
+  <text x="256" y="320" font-family="Arial, sans-serif" font-size="140" font-weight="bold" fill="#FFCB05" text-anchor="middle">?</text>
+</svg>

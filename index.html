@@ -7,6 +7,18 @@
     <meta name="theme-color" content="#2A75BB">
     <title>¿Quién es este Pokémon? - Juego Interactivo</title>
 
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- iOS PWA Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Pokémon Quiz">
+    <link rel="apple-touch-icon" href="icon.svg">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -70,6 +82,22 @@
                     <div id="streak-badge" class="streak-container opacity-0 transition-opacity duration-300">
                         <span>🔥</span> <span id="streak-display">0</span> RACHA
                     </div>
+                </div>
+
+                <!-- Controles del juego -->
+                <div class="flex justify-end gap-2 mb-3">
+                    <button id="mute-button"
+                            class="control-btn"
+                            aria-label="Silenciar/Activar sonido"
+                            title="Silenciar/Activar sonido">
+                        <span id="mute-icon">🔊</span>
+                    </button>
+                    <button id="restart-button"
+                            class="control-btn"
+                            aria-label="Reiniciar juego"
+                            title="Reiniciar juego desde el inicio">
+                        🔄
+                    </button>
                 </div>
 
                 <!-- Imagen Pokémon -->
@@ -140,5 +168,20 @@
 
     <!-- JavaScript del juego -->
     <script src="game.js"></script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('Service Worker registrado:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Service Worker falló:', error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
