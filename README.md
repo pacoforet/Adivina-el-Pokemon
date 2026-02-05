@@ -10,14 +10,40 @@ Un juego interactivo y divertido para adivinar los 150 Pokémon originales de la
 ## ✨ Características
 
 - 🎯 **150 Pokémon originales** de la primera generación
+- 📱 **PWA (Progressive Web App)** - instálalo en tu iPhone o Android
 - 🎨 **Interfaz atractiva** con diseño inspirado en Pokémon
-- 🔊 **Efectos de sonido** y voces para cada Pokémon
+- 🔊 **Efectos de sonido** y voces para cada Pokémon (con botón de silencio)
 - 🏆 **Sistema de puntuación** con mejor puntuación guardada
 - 🔥 **Sistema de rachas** para seguir tu progreso
 - 🎊 **Efectos de confeti** cuando aciertas
+- 💾 **Persistencia de juego** - resume donde lo dejaste
+- 🔄 **Función de reinicio** - empieza de nuevo cuando quieras
+- 🔇 **Control de sonido** - silencia/activa el audio fácilmente
 - 📱 **Totalmente responsive** - funciona en móviles y tablets
 - ♿ **Accesible** - soporte para teclado y lectores de pantalla
-- 💾 **Guarda tu progreso** - tu mejor puntuación se guarda automáticamente
+- 🌐 **Funciona offline** - juega sin conexión una vez instalado
+
+## 📲 Instalación como App (PWA)
+
+### En iPhone/iPad:
+1. Abre el juego en **Safari** (importante: debe ser Safari)
+2. Toca el botón de **Compartir** (cuadrado con flecha hacia arriba)
+3. Desplázate y selecciona **"Añadir a pantalla de inicio"**
+4. Toca **"Añadir"**
+5. ¡Listo! Ahora tienes el icono en tu pantalla de inicio
+
+### En Android:
+1. Abre el juego en **Chrome**
+2. Toca el menú (tres puntos verticales)
+3. Selecciona **"Añadir a pantalla de inicio"** o **"Instalar app"**
+4. Confirma tocando **"Añadir"**
+5. ¡El juego se instalará como una app!
+
+### Ventajas de instalar:
+- ✅ Funciona offline sin conexión a internet
+- ✅ Acceso rápido desde tu pantalla de inicio
+- ✅ Experiencia de app nativa sin bordes del navegador
+- ✅ Tu progreso se guarda automáticamente
 
 ## 🎮 Cómo Jugar
 
@@ -34,12 +60,26 @@ Un juego interactivo y divertido para adivinar los 150 Pokémon originales de la
    - 🔄 Puedes intentar de nuevo con las opciones restantes
 6. **Completa los 150 Pokémon** y compara tu puntuación
 
-### 🎹 Atajos de Teclado
+### 🎛️ Controles Durante el Juego
 
-Durante el juego, puedes usar:
+**Botones en pantalla:**
+- 🔊/🔇 **Silenciar**: Activa/desactiva todos los sonidos
+- 🔄 **Reiniciar**: Comienza un nuevo juego desde cero
+
+**Atajos de teclado:**
 - **Tecla 1**: Seleccionar primera opción
 - **Tecla 2**: Seleccionar segunda opción
 - **Tecla 3**: Seleccionar tercera opción
+
+### 💾 Persistencia de Juego
+
+El juego guarda automáticamente tu progreso. Si cierras el navegador o la app:
+- ✅ Tu puntuación actual se mantiene
+- ✅ El Pokémon en el que estabas continúa donde lo dejaste
+- ✅ Tu racha y estadísticas se preservan
+- ✅ Al volver, el juego se reanuda automáticamente
+
+Para empezar un juego completamente nuevo, usa el botón **🔄 Reiniciar** durante la partida.
 
 ## 🚀 Instalación y Uso
 
