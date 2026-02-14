@@ -64,7 +64,8 @@ export function createUI(dom) {
     },
 
     lockOptions(lock) {
-      dom.optionButtons.forEach((btn) => {
+      const optionButtons = [...dom.optionsWrap.querySelectorAll('.option-btn')];
+      optionButtons.forEach((btn) => {
         btn.disabled = lock || btn.dataset.disabledForever === '1';
       });
     },
@@ -107,8 +108,10 @@ export function createUI(dom) {
     showWrong(button) {
       button.classList.add('wrong');
       button.dataset.disabledForever = '1';
-      dom.gameCard.classList.add('shake');
-      setTimeout(() => dom.gameCard.classList.remove('shake'), 260);
+      if (dom.gameCard) {
+        dom.gameCard.classList.add('shake');
+        setTimeout(() => dom.gameCard.classList.remove('shake'), 260);
+      }
     },
 
     showBonus(points) {

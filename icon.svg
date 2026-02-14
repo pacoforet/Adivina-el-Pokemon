@@ -1,30 +1,26 @@
-<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background circle -->
-  <circle cx="256" cy="256" r="256" fill="#2A75BB"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Adivina el Pokemon icon">
+  <defs>
+    <linearGradient id="topRed" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ff5c4d"/>
+      <stop offset="100%" stop-color="#d73322"/>
+    </linearGradient>
+    <linearGradient id="bottomWhite" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#dde7f7"/>
+    </linearGradient>
+  </defs>
 
-  <!-- Pokéball design -->
-  <g>
-    <!-- Top half (red) -->
-    <path d="M 256 256 L 256 50 A 206 206 0 0 1 462 256 Z" fill="#E3350D"/>
+  <rect width="512" height="512" rx="112" fill="#0f2f5d"/>
+  <circle cx="256" cy="256" r="182" fill="#122e55"/>
 
-    <!-- Bottom half (white) -->
-    <path d="M 256 256 L 256 462 A 206 206 0 0 1 50 256 Z" fill="#FFFFFF"/>
+  <path d="M74 256a182 182 0 0 1 364 0H74z" fill="url(#topRed)"/>
+  <path d="M74 256h364a182 182 0 0 1-364 0z" fill="url(#bottomWhite)"/>
 
-    <!-- Right bottom (white) -->
-    <path d="M 256 256 L 462 256 A 206 206 0 0 0 256 462 Z" fill="#FFFFFF"/>
+  <rect x="74" y="240" width="364" height="32" fill="#16263e"/>
 
-    <!-- Center line -->
-    <rect x="50" y="236" width="412" height="40" fill="#1a1a1a"/>
+  <circle cx="256" cy="256" r="60" fill="#16263e"/>
+  <circle cx="256" cy="256" r="45" fill="#f7fbff"/>
+  <circle cx="256" cy="256" r="24" fill="#16263e"/>
 
-    <!-- Center circle background -->
-    <circle cx="256" cy="256" r="70" fill="#1a1a1a"/>
-    <circle cx="256" cy="256" r="55" fill="#FFFFFF"/>
-    <circle cx="256" cy="256" r="35" fill="#1a1a1a"/>
-
-    <!-- Pokéball shine -->
-    <ellipse cx="200" cy="150" rx="40" ry="50" fill="#FFFFFF" opacity="0.3"/>
-  </g>
-
-  <!-- Question mark -->
-  <text x="256" y="320" font-family="Arial, sans-serif" font-size="140" font-weight="bold" fill="#FFCB05" text-anchor="middle">?</text>
+  <text x="256" y="164" text-anchor="middle" font-family="Trebuchet MS, Segoe UI, sans-serif" font-size="56" font-weight="900" fill="#ffcb05" stroke="#214f8f" stroke-width="6" paint-order="stroke">L&amp;F</text>
 </svg>

@@ -8,14 +8,19 @@
     <title>Adivina el Pokemon</title>
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icon.svg" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <canvas id="fx-canvas" width="1200" height="900" aria-hidden="true"></canvas>
     <main id="game-container" class="layout">
       <section id="start-screen" class="card">
-        <h1>Adivina el Pokemon</h1>
-        <p class="subtitle">Edicion definitiva para Lucas y Fede</p>
+        <div class="hero-brand">
+          <p class="pokemon-mini">WHO'S THAT POKEMON?</p>
+          <h1 class="pokemon-logo">Adivina el Pokemon</h1>
+          <p class="subtitle">Edicion definitiva</p>
+          <h2 class="lucas-fede-title">Lucas &amp; Fede</h2>
+        </div>
 
         <div id="high-score-display" class="pill hidden" aria-live="polite">
           Mejor puntuacion: <strong id="high-score-value">0</strong>/150
@@ -36,7 +41,8 @@
         <button id="start-button" class="primary-btn">Jugar ahora</button>
       </section>
 
-      <section id="game-screen" class="card hidden">
+      <section id="game-screen" class="card hidden" aria-live="polite">
+        <div id="game-card">
         <header class="hud">
           <div>Puntos: <strong id="score-display">0</strong></div>
           <div>Fallos: <strong id="failed-display">0</strong></div>
@@ -60,6 +66,7 @@
         <p id="hint-message" class="hint hidden"></p>
 
         <div id="options-container" class="options" role="group" aria-label="Opciones"></div>
+        </div>
       </section>
 
       <section id="end-screen" class="card hidden">

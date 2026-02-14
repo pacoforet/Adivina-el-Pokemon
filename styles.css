@@ -1,8 +1,11 @@
 :root {
   --blue: #2a75bb;
   --blue-dark: #1f4f8e;
+  --blue-ink: #102447;
   --yellow: #ffcb05;
+  --yellow-soft: #ffe37d;
   --red: #e3350d;
+  --slate: #273447;
   --bg: #f3f6fb;
   --card: #ffffff;
   --text: #1d2433;
@@ -17,7 +20,10 @@ body {
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
   color: var(--text);
   min-height: 100vh;
-  background: radial-gradient(circle at 20% 10%, #89b4e1, var(--blue-dark));
+  background:
+    radial-gradient(circle at 10% 10%, #9cc9f5 0%, transparent 36%),
+    radial-gradient(circle at 90% 20%, #ffe17c 0%, transparent 32%),
+    linear-gradient(140deg, #16407a 0%, #224f90 45%, #0e2c56 100%);
 }
 
 #fx-canvas {
@@ -36,30 +42,76 @@ body {
 }
 
 .card {
-  background: linear-gradient(180deg, var(--card), #eef3fa);
-  border: 5px solid var(--yellow);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(242, 247, 255, 0.98));
+  border: 6px solid var(--yellow);
   border-radius: 22px;
-  box-shadow: 0 24px 48px rgba(8, 17, 34, 0.25);
-  padding: 1.2rem;
+  box-shadow:
+    0 0 0 5px var(--blue),
+    0 24px 48px rgba(8, 17, 34, 0.3);
+  padding: 1.25rem;
 }
 
 h1,
 h2 {
   margin: 0;
-  color: var(--blue-dark);
+  color: var(--blue-ink);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 
 .subtitle {
-  margin: 0.5rem 0 1rem;
+  margin: 0.3rem 0 0.85rem;
+  font-weight: 700;
+  color: #425e82;
+}
+
+.hero-brand {
+  text-align: center;
+}
+
+.pokemon-mini {
+  margin: 0 0 0.35rem;
+  letter-spacing: 0.22em;
+  font-size: 0.72rem;
+  color: #48658b;
+  font-weight: 800;
+}
+
+.pokemon-logo {
+  color: var(--yellow);
+  font-size: clamp(1.9rem, 6.4vw, 3rem);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow:
+    -2px -2px 0 var(--blue),
+    2px -2px 0 var(--blue),
+    -2px 2px 0 var(--blue),
+    2px 2px 0 var(--blue),
+    0 5px 0 #0f325f;
+}
+
+.lucas-fede-title {
+  font-size: clamp(1.6rem, 5.8vw, 2.4rem);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #ffd84b;
+  text-shadow:
+    -2px -2px 0 var(--blue),
+    2px -2px 0 var(--blue),
+    -2px 2px 0 var(--blue),
+    2px 2px 0 var(--blue),
+    0 4px 0 #11386a;
+  margin: 0.2rem 0 0.6rem;
 }
 
 .settings-block {
-  border: 2px solid #c6d4e8;
+  border: 2px solid #b4c9e7;
   border-radius: 12px;
   margin: 1rem 0;
   padding: 0.75rem;
+  background: #f8fbff;
 }
 
 .settings-block label,
@@ -79,26 +131,42 @@ h2 {
 .ghost-btn,
 .option-btn {
   border-radius: 12px;
-  border: 0;
+  border: 2px solid transparent;
   padding: 0.8rem 0.95rem;
   font-size: 1rem;
   cursor: pointer;
   font-weight: 800;
+  transition: transform 0.15s ease, filter 0.15s ease;
 }
 
 .primary-btn {
-  background: var(--red);
+  background: linear-gradient(180deg, #ff6343, var(--red));
   color: white;
   width: 100%;
+  border-color: #8a230f;
+  box-shadow: 0 4px 0 #8a230f;
 }
 
 .primary-btn:hover {
-  background: #f5522e;
+  transform: translateY(-1px);
+  filter: brightness(1.02);
 }
 
 .ghost-btn {
-  background: #dde8f7;
-  color: #132a47;
+  background: linear-gradient(180deg, #eff5ff, #dce9fb);
+  color: var(--slate);
+  border-color: #9db8dc;
+}
+
+.ghost-btn:hover,
+.option-btn:hover {
+  transform: translateY(-1px);
+}
+
+.primary-btn:active,
+.ghost-btn:active,
+.option-btn:active {
+  transform: translateY(2px);
 }
 
 .controls {
@@ -112,7 +180,8 @@ h2 {
   display: grid;
   gap: 0.4rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  background: #eef4fd;
+  background: linear-gradient(180deg, #f7fbff, #ecf3ff);
+  border: 2px solid #c5d7f0;
   border-radius: 12px;
   padding: 0.6rem;
 }
@@ -120,7 +189,7 @@ h2 {
 .badge {
   margin-top: 0.6rem;
   display: inline-block;
-  background: var(--red);
+  background: linear-gradient(180deg, #ff6443, #d33610);
   color: white;
   border-radius: 999px;
   padding: 0.25rem 0.7rem;
@@ -134,7 +203,10 @@ h2 {
   width: min(290px, 76vw);
   height: min(290px, 76vw);
   margin: 1rem auto;
-  background: radial-gradient(circle, #fff 45%, #d8e1ee);
+  background:
+    radial-gradient(circle at 50% 36%, #ffffff 0%, #f6fbff 52%, #d8e1ee 100%);
+  border: 4px solid #c8d8ee;
+  box-shadow: inset 0 10px 18px rgba(23, 49, 85, 0.15);
 }
 
 .pokemon {
@@ -160,19 +232,25 @@ h2 {
 }
 
 .option-btn {
-  background: var(--yellow);
+  background: linear-gradient(180deg, var(--yellow-soft), var(--yellow));
   color: #1e1e1e;
   min-height: 50px;
+  border-color: #b88f00;
+  box-shadow: 0 3px 0 #b88f00;
 }
 
 .option-btn.correct {
-  background: #2eaa40;
+  background: linear-gradient(180deg, #4fc56b, #2eaa40);
   color: white;
+  border-color: #1f6b2f;
+  box-shadow: 0 3px 0 #1f6b2f;
 }
 
 .option-btn.wrong {
-  background: #d63a32;
+  background: linear-gradient(180deg, #e45852, #c7332a);
   color: white;
+  border-color: #7b1d17;
+  box-shadow: 0 3px 0 #7b1d17;
 }
 
 .spinner {
@@ -210,9 +288,10 @@ h2 {
 .pill {
   display: inline-block;
   border-radius: 999px;
-  border: 2px solid #c0d3ee;
+  border: 2px solid #b5ccee;
   padding: 0.3rem 0.75rem;
-  background: #f6f9ff;
+  background: linear-gradient(180deg, #fbfdff, #edf4ff);
+  font-weight: 700;
 }
 
 .big-score {
@@ -247,6 +326,7 @@ h2 {
   background: #e6fff5;
   border-left: 4px solid #39b47b;
   padding: 0.4rem 0.55rem;
+  border-radius: 8px;
 }
 
 .kid-mode .option-btn {
