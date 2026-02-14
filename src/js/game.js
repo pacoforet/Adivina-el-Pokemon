@@ -108,7 +108,6 @@ export function createGameController({ state, ui, audio, settingsRef, onReturnTo
     state.failed += 1;
     state.streak = 0;
     ui.showWrong(button);
-    ui.toast('Fallo. Intenta otra opcion.');
     audio.playWrong();
     ui.updateHud(state, GAME_CONFIG.totalPokemon, settingsRef.current.timerEnabled);
 

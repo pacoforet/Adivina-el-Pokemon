@@ -111,6 +111,14 @@ export function createUI(dom) {
         dom.gameCard.classList.add('good-hit');
         setTimeout(() => dom.gameCard.classList.remove('good-hit'), 280);
       }
+      if (dom.image) {
+        dom.image.classList.add('pokemon-pop');
+        setTimeout(() => dom.image.classList.remove('pokemon-pop'), 520);
+      }
+      document.body.classList.add('flash-good');
+      setTimeout(() => document.body.classList.remove('flash-good'), 360);
+      if (navigator.vibrate) navigator.vibrate([60, 45, 80]);
+      this.toast('SIIII! ACERTASTE!');
     },
 
     showWrong(button) {
@@ -119,6 +127,14 @@ export function createUI(dom) {
         dom.gameCard.classList.add('shake', 'bad-hit');
         setTimeout(() => dom.gameCard.classList.remove('shake', 'bad-hit'), 280);
       }
+      if (dom.image) {
+        dom.image.classList.add('pokemon-drop');
+        setTimeout(() => dom.image.classList.remove('pokemon-drop'), 420);
+      }
+      document.body.classList.add('flash-bad');
+      setTimeout(() => document.body.classList.remove('flash-bad'), 360);
+      if (navigator.vibrate) navigator.vibrate([140, 70, 140]);
+      this.toast('OH NO! INTENTA OTRA!');
     },
 
     showBonus(points) {

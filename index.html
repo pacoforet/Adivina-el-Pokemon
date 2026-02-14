@@ -56,10 +56,11 @@
             <article class="stat-card fail">
               <span class="label">FALLOS</span>
               <strong id="failed-display">0</strong>
-              <button id="finish-button" class="mini-finish-btn" type="button">↻ Terminar</button>
             </article>
             <article class="stat-card round"><span class="label">RONDA</span><strong id="pokemon-counter">1/150</strong></article>
-            <article id="streak-badge" class="stat-card streak hidden"><span class="label">RACHA</span><strong id="streak-display">0</strong></article>
+            <article class="stat-card finish">
+              <button id="finish-button" class="mini-finish-btn" type="button">↻ Terminar</button>
+            </article>
           </header>
 
           <div id="timer-wrap" class="timer-wrap" aria-label="Temporizador">
@@ -67,6 +68,7 @@
               <div id="timer-fill" class="timer-fill"></div>
             </div>
           </div>
+          <div id="streak-badge" class="streak-banner hidden">Racha x<span id="streak-display">0</span></div>
 
           <div class="pokemon-wrap" aria-live="polite">
             <div id="loading-spinner" class="spinner hidden" aria-label="Cargando"></div>
