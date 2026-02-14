@@ -50,11 +50,11 @@ export function createAudioSystem(getSettings) {
       cry.play().catch(() => {});
     },
 
-    speakPokemonName(name, kidMode) {
+    speakPokemonName(name) {
       if (!('speechSynthesis' in window) || !this.canPlay()) return;
       const utterance = new SpeechSynthesisUtterance(`Es ${formatPokemonNameForSpeech(name)}`);
       utterance.lang = 'es-ES';
-      utterance.rate = kidMode ? 0.85 : GAME_CONFIG.speechRate;
+      utterance.rate = GAME_CONFIG.speechRate;
       utterance.pitch = GAME_CONFIG.speechPitch;
       window.speechSynthesis.speak(utterance);
     }

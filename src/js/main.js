@@ -41,7 +41,6 @@ const dom = {
   shareButton: document.getElementById('share-button'),
 
   difficultyButtons: [...document.querySelectorAll('.difficulty-btn')],
-  kidModeButton: document.getElementById('kid-mode-btn'),
   timerButton: document.getElementById('timer-btn')
 };
 
@@ -67,12 +66,6 @@ function setDifficulty(value) {
   const next = resolveSettings({ ...settingsRef.current, difficulty: value });
   game.setSettings(next);
   ui.toast(`Dificultad: ${game.difficultyLabel()}`);
-}
-
-function toggleKidMode() {
-  const next = resolveSettings({ ...settingsRef.current, kidMode: !settingsRef.current.kidMode });
-  game.setSettings(next);
-  ui.toast(next.kidMode ? 'Modo Lucas y Fede activado' : 'Modo Lucas y Fede desactivado');
 }
 
 function toggleTimer() {
@@ -102,10 +95,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   dom.difficultyButtons.forEach((button) => {
     button.addEventListener('click', () => setDifficulty(button.dataset.difficulty));
-  });
-
-  dom.kidModeButton.addEventListener('click', () => {
-    toggleKidMode();
   });
 
   dom.timerButton.addEventListener('click', () => {

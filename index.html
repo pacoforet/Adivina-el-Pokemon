@@ -20,36 +20,11 @@
       <section id="start-screen" class="card start-card">
         <div class="hero-brand">
           <p class="pokemon-mini">RETRO ARCADE EDITION</p>
-          <h1 class="pokemon-logo">Adivina el Pokemon</h1>
-          <h2 class="lucas-fede-title">Lucas &amp; Fede</h2>
+          <h1 class="pokemon-logo">Gotta Catch em All</h1>
+          <h2 class="lucas-fede-title">Lucas &amp; Fede Edition</h2>
         </div>
 
-        <svg class="pixel-trainers" viewBox="0 0 160 72" aria-label="Pixel art de Lucas y Fede" shape-rendering="crispEdges">
-          <rect width="160" height="72" fill="#8bc5ff" />
-          <rect y="52" width="160" height="20" fill="#52a847" />
-          <g transform="translate(26 12)">
-            <rect x="9" y="0" width="6" height="6" fill="#f2c39f" />
-            <rect x="6" y="3" width="12" height="3" fill="#2e3b57" />
-            <rect x="6" y="6" width="12" height="8" fill="#f2c39f" />
-            <rect x="3" y="14" width="18" height="7" fill="#e3350d" />
-            <rect x="0" y="21" width="24" height="6" fill="#2a75bb" />
-            <rect x="5" y="27" width="6" height="11" fill="#253553" />
-            <rect x="13" y="27" width="6" height="11" fill="#253553" />
-            <rect x="3" y="38" width="8" height="4" fill="#111" />
-            <rect x="13" y="38" width="8" height="4" fill="#111" />
-          </g>
-          <g transform="translate(98 12)">
-            <rect x="9" y="0" width="6" height="6" fill="#f0bf9b" />
-            <rect x="6" y="3" width="12" height="3" fill="#f9dc5c" />
-            <rect x="6" y="6" width="12" height="8" fill="#f0bf9b" />
-            <rect x="3" y="14" width="18" height="7" fill="#ffcb05" />
-            <rect x="0" y="21" width="24" height="6" fill="#d53a2f" />
-            <rect x="5" y="27" width="6" height="11" fill="#3f4c63" />
-            <rect x="13" y="27" width="6" height="11" fill="#3f4c63" />
-            <rect x="3" y="38" width="8" height="4" fill="#111" />
-            <rect x="13" y="38" width="8" height="4" fill="#111" />
-          </g>
-        </svg>
+        <img class="trainers-photo" src="./lucas-fede-pokemon.png" alt="Lucas y Fede entrenadores Pokemon" />
 
         <div id="high-score-display" class="pill hidden" aria-live="polite">
           Mejor puntuacion: <strong id="high-score-value">0</strong>/150
@@ -67,7 +42,6 @@
         <div class="setting-group">
           <p class="setting-title">Opciones</p>
           <div class="button-row">
-            <button id="kid-mode-btn" class="setting-btn toggle-btn" type="button" aria-pressed="false">Modo Lucas y Fede: OFF</button>
             <button id="timer-btn" class="setting-btn toggle-btn active" type="button" aria-pressed="true">Temporizador: ON</button>
           </div>
         </div>
@@ -79,7 +53,11 @@
         <div id="game-card">
           <header class="hud">
             <article class="stat-card points"><span class="label">PUNTOS</span><strong id="score-display">0</strong></article>
-            <article class="stat-card fail"><span class="label">FALLOS</span><strong id="failed-display">0</strong></article>
+            <article class="stat-card fail">
+              <span class="label">FALLOS</span>
+              <strong id="failed-display">0</strong>
+              <button id="finish-button" class="mini-finish-btn" type="button">↻ Terminar</button>
+            </article>
             <article class="stat-card round"><span class="label">RONDA</span><strong id="pokemon-counter">1/150</strong></article>
             <article id="streak-badge" class="stat-card streak hidden"><span class="label">RACHA</span><strong id="streak-display">0</strong></article>
           </header>
@@ -88,10 +66,6 @@
             <div class="timer-track">
               <div id="timer-fill" class="timer-fill"></div>
             </div>
-          </div>
-
-          <div class="controls">
-            <button id="finish-button" class="ghost-btn danger" type="button">Finalizar juego</button>
           </div>
 
           <div class="pokemon-wrap" aria-live="polite">

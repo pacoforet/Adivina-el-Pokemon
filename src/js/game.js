@@ -86,7 +86,7 @@ export function createGameController({ state, ui, audio, settingsRef, onReturnTo
 
     setTimeout(() => {
       audio.playPokemonCry(currentPokemon().id);
-      audio.speakPokemonName(currentPokemon().name, settingsRef.current.kidMode);
+      audio.speakPokemonName(currentPokemon().name);
     }, 220);
 
     clearInterval(state.timer.intervalId);

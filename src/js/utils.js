@@ -37,20 +37,17 @@ export function resolveSettings(raw = {}) {
   const difficulty = DIFFICULTY_PRESETS[raw.difficulty] ? raw.difficulty : 'normal';
   return {
     difficulty,
-    kidMode: Boolean(raw.kidMode),
     timerEnabled: raw.timerEnabled !== false,
     muted: Boolean(raw.muted)
   };
 }
 
 export function optionsPerQuestion(settings) {
-  const base = DIFFICULTY_PRESETS[settings.difficulty].optionsPerQuestion;
-  return settings.kidMode ? Math.min(base, 3) : base;
+  return DIFFICULTY_PRESETS[settings.difficulty].optionsPerQuestion;
 }
 
 export function roundTime(settings) {
-  const base = DIFFICULTY_PRESETS[settings.difficulty].roundTimeSec;
-  return settings.kidMode ? base + 5 : base;
+  return DIFFICULTY_PRESETS[settings.difficulty].roundTimeSec;
 }
 
 export function buildRoundOptions(allPokemon, correctPokemon, optionCount) {

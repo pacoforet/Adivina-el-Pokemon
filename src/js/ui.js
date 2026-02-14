@@ -47,15 +47,9 @@ export function createUI(dom) {
         button.classList.toggle('active', button.dataset.difficulty === settings.difficulty);
       });
 
-      dom.kidModeButton.classList.toggle('active', settings.kidMode);
-      dom.kidModeButton.setAttribute('aria-pressed', String(settings.kidMode));
-      dom.kidModeButton.textContent = `Modo Lucas y Fede: ${settings.kidMode ? 'ON' : 'OFF'}`;
-
       dom.timerButton.classList.toggle('active', settings.timerEnabled);
       dom.timerButton.setAttribute('aria-pressed', String(settings.timerEnabled));
       dom.timerButton.textContent = `Temporizador: ${settings.timerEnabled ? 'ON' : 'OFF'}`;
-
-      dom.gameRoot.classList.toggle('kid-mode', settings.kidMode);
     },
 
     updateHud(state, totalPokemon, timerEnabled) {
