@@ -49,6 +49,7 @@ body {
   width: 100vw;
   height: 100vh;
   pointer-events: none;
+  z-index: 6;
 }
 
 #hit-overlay {
@@ -56,7 +57,7 @@ body {
   inset: 0;
   pointer-events: none;
   opacity: 0;
-  z-index: 3;
+  z-index: 8;
 }
 
 .layout {
@@ -70,7 +71,7 @@ body {
   display: grid;
   place-items: center;
   position: relative;
-  z-index: 1;
+  z-index: 3;
 }
 
 .card {
@@ -103,7 +104,18 @@ body {
 #game-screen,
 #end-screen {
   max-height: min(100%, calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 1.1rem));
-  overflow: auto;
+}
+
+#game-screen {
+  height: 100%;
+  overflow: hidden;
+}
+
+#game-card {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .hero-brand {
@@ -225,17 +237,19 @@ body {
 .hud {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.55rem;
+  gap: 0.42rem;
 }
 
 .stat-card {
   border: 3px solid #1d3a66;
-  border-radius: 10px;
-  min-height: 94px;
-  padding: 0.5rem;
+  border-radius: 4px;
+  min-height: 74px;
+  padding: 0.36rem;
   text-align: center;
   background: linear-gradient(180deg, #f8fbff, #dcecff);
-  box-shadow: 0 4px 0 #90abce;
+  box-shadow:
+    0 3px 0 #90abce,
+    0 0 0 2px rgba(255, 255, 255, 0.1) inset;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -244,14 +258,14 @@ body {
 
 .stat-card .label {
   display: block;
-  font-size: 0.95rem;
+  font-size: 0.74rem;
   letter-spacing: 0.14em;
   color: #eef6ff;
 }
 
 .stat-card strong {
   display: block;
-  font-size: 2rem;
+  font-size: 1.55rem;
   margin-top: 0.08rem;
   color: #ffffff;
 }
@@ -275,7 +289,7 @@ body {
   border-color: #12396f;
   background: linear-gradient(180deg, #1f4d8e, #163a70);
   color: #ffffff;
-  font-size: 1.65rem;
+  font-size: 1.3rem;
   font-family: inherit;
   font-weight: 800;
   cursor: pointer;
@@ -291,7 +305,7 @@ body {
 }
 
 .timer-wrap {
-  margin: 0.85rem 0 0.55rem;
+  margin: 0.55rem 0 0.4rem;
 }
 
 .timer-track {
@@ -307,12 +321,12 @@ body {
   height: 100%;
   width: 100%;
   background: #44c267;
-  transition: width 0.12s linear, background-color 0.12s linear;
+  transition: width 0.06s linear, background-color 0.06s linear;
 }
 
 .streak-banner {
   text-align: center;
-  font-size: 1.15rem;
+  font-size: 0.92rem;
   font-weight: 900;
   letter-spacing: 0.08em;
   color: #0f7b34;
@@ -335,9 +349,9 @@ body {
 
 .pokemon-wrap {
   position: relative;
-  width: min(66vw, 300px);
-  height: min(66vw, 300px);
-  margin: 0.15rem auto 0.75rem;
+  width: min(52vw, 238px);
+  height: min(52vw, 238px);
+  margin: 0.05rem auto 0.4rem;
   border-radius: 50%;
   border: 3px solid #90b0d8;
   background: radial-gradient(circle at 50% 35%, #fff 0%, #f1f7ff 58%, #d3deef 100%);
@@ -365,20 +379,26 @@ body {
 }
 
 .options {
-  display: grid;
-  gap: 0.48rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.34rem;
+  flex: 1;
+  min-height: 0;
+  padding-bottom: 0.15rem;
 }
 
 .option-btn {
-  min-height: 74px;
+  min-height: 0;
+  height: 100%;
+  flex: 1;
   background: linear-gradient(180deg, #ffe486, #ffcb05);
   color: #1f1f1f;
   border-color: #8d6b00;
   box-shadow: 0 4px 0 #8d6b00;
-  font-size: clamp(1.55rem, 5.1vw, 1.95rem);
+  font-size: clamp(1.62rem, 5.4vw, 2.05rem);
   letter-spacing: 0.03em;
   line-height: 1.1;
-  padding: 0.6rem 0.7rem;
+  padding: 0.45rem 0.6rem;
 }
 
 .option-btn.correct {

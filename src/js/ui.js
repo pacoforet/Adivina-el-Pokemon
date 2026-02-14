@@ -127,7 +127,6 @@ export function createUI(dom) {
       document.body.classList.add('flash-good');
       setTimeout(() => document.body.classList.remove('flash-good'), 360);
       if (navigator.vibrate) navigator.vibrate([60, 45, 80]);
-      this.toast('SIIII! ACERTASTE!');
     },
 
     showWrong(button) {
