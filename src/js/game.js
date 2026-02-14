@@ -28,13 +28,13 @@ export function createGameController({ state, ui, audio, settingsRef, onReturnTo
     ui.updateHud(state, GAME_CONFIG.totalPokemon, settingsRef.current.timerEnabled);
 
     state.timer.intervalId = setInterval(() => {
-      state.timer.remainingSec -= 1;
+      state.timer.remainingSec = Math.max(0, state.timer.remainingSec - 0.1);
       ui.updateHud(state, GAME_CONFIG.totalPokemon, settingsRef.current.timerEnabled);
       if (state.timer.remainingSec <= 0) {
         clearInterval(state.timer.intervalId);
         onTimeout();
       }
-    }, 1000);
+    }, 100);
   }
 
   function saveProgress() {

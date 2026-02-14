@@ -3,16 +3,25 @@ export function confettiBurst() {
   if (!canvas) return;
 
   const ctx = canvas.getContext('2d');
-  const particles = Array.from({ length: 70 }, () => ({
-    x: canvas.width * 0.5,
-    y: canvas.height * 0.45,
-    vx: (Math.random() - 0.5) * 9,
-    vy: Math.random() * -6 - 1,
-    g: 0.16,
-    size: Math.random() * 4 + 2,
-    life: 60,
-    color: ['#ffcb05', '#2a75bb', '#e3350d'][Math.floor(Math.random() * 3)]
-  }));
+  const bursts = [
+    { x: 0.2, y: 0.3 },
+    { x: 0.8, y: 0.3 },
+    { x: 0.5, y: 0.2 },
+    { x: 0.35, y: 0.55 },
+    { x: 0.65, y: 0.55 }
+  ];
+  const particles = bursts.flatMap((burst) =>
+    Array.from({ length: 80 }, () => ({
+      x: canvas.width * burst.x,
+      y: canvas.height * burst.y,
+      vx: (Math.random() - 0.5) * 11,
+      vy: Math.random() * -8 - 1.5,
+      g: 0.18,
+      size: Math.random() * 5 + 2,
+      life: 72,
+      color: ['#ffcb05', '#2a75bb', '#e3350d', '#4bd670'][Math.floor(Math.random() * 4)]
+    }))
+  );
 
   function frame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -133,6 +142,13 @@ export function createUI(dom) {
       }
       document.body.classList.add('flash-bad');
       setTimeout(() => document.body.classList.remove('flash-bad'), 360);
+      const overlay = document.getElementById('hit-overlay');
+      if (overlay) {
+        overlay.classList.remove('fail');
+        // Force restart animation
+        void overlay.offsetWidth;
+        overlay.classList.add('fail');
+      }
       if (navigator.vibrate) navigator.vibrate([140, 70, 140]);
       this.toast('OH NO! INTENTA OTRA!');
     },
