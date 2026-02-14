@@ -3,9 +3,9 @@ export function confettiBurst() {
   if (!canvas) return;
 
   const ctx = canvas.getContext('2d');
-  const particles = Array.from({ length: 60 }, () => ({
+  const particles = Array.from({ length: 70 }, () => ({
     x: canvas.width * 0.5,
-    y: canvas.height * 0.4,
+    y: canvas.height * 0.45,
     vx: (Math.random() - 0.5) * 9,
     vy: Math.random() * -6 - 1,
     g: 0.16,
@@ -43,13 +43,19 @@ export function createUI(dom) {
     },
 
     applySettings(settings) {
-      dom.difficultyRadios.forEach((radio) => {
-        radio.checked = radio.value === settings.difficulty;
+      dom.difficultyButtons.forEach((button) => {
+        button.classList.toggle('active', button.dataset.difficulty === settings.difficulty);
       });
-      dom.kidModeCheckbox.checked = settings.kidMode;
-      dom.timerCheckbox.checked = settings.timerEnabled;
+
+      dom.kidModeButton.classList.toggle('active', settings.kidMode);
+      dom.kidModeButton.setAttribute('aria-pressed', String(settings.kidMode));
+      dom.kidModeButton.textContent = `Modo Lucas y Fede: ${settings.kidMode ? 'ON' : 'OFF'}`;
+
+      dom.timerButton.classList.toggle('active', settings.timerEnabled);
+      dom.timerButton.setAttribute('aria-pressed', String(settings.timerEnabled));
+      dom.timerButton.textContent = `Temporizador: ${settings.timerEnabled ? 'ON' : 'OFF'}`;
+
       dom.gameRoot.classList.toggle('kid-mode', settings.kidMode);
-      dom.muteButton.textContent = settings.muted ? 'Activar sonido' : 'Silenciar sonido';
     },
 
     updateHud(state, totalPokemon, timerEnabled) {
@@ -57,16 +63,20 @@ export function createUI(dom) {
       dom.failedDisplay.textContent = state.failed;
       dom.counterDisplay.textContent = `${state.currentPokemonIndex + 1}/${totalPokemon}`;
       dom.streakDisplay.textContent = state.streak;
-      dom.hintsDisplay.textContent = state.hintsAvailable;
       dom.streakBadge.classList.toggle('hidden', state.streak < 2);
       dom.timerWrap.classList.toggle('hidden', !timerEnabled);
-      dom.timerDisplay.textContent = state.timer.remainingSec;
+
+      const total = state.timer.totalSec || 1;
+      const percent = Math.max(0, Math.min(100, (state.timer.remainingSec / total) * 100));
+      const hue = Math.round((percent / 100) * 120);
+      dom.timerFill.style.width = `${percent}%`;
+      dom.timerFill.style.backgroundColor = `hsl(${hue}, 75%, 48%)`;
     },
 
     lockOptions(lock) {
       const optionButtons = [...dom.optionsWrap.querySelectorAll('.option-btn')];
       optionButtons.forEach((btn) => {
-        btn.disabled = lock || btn.dataset.disabledForever === '1';
+        btn.disabled = lock;
       });
     },
 
@@ -103,14 +113,17 @@ export function createUI(dom) {
 
     showCorrect(button) {
       button.classList.add('correct');
+      if (dom.gameCard) {
+        dom.gameCard.classList.add('good-hit');
+        setTimeout(() => dom.gameCard.classList.remove('good-hit'), 280);
+      }
     },
 
     showWrong(button) {
       button.classList.add('wrong');
-      button.dataset.disabledForever = '1';
       if (dom.gameCard) {
-        dom.gameCard.classList.add('shake');
-        setTimeout(() => dom.gameCard.classList.remove('shake'), 260);
+        dom.gameCard.classList.add('shake', 'bad-hit');
+        setTimeout(() => dom.gameCard.classList.remove('shake', 'bad-hit'), 280);
       }
     },
 
@@ -125,13 +138,7 @@ export function createUI(dom) {
     toast(text) {
       dom.toast.textContent = text;
       dom.toast.classList.add('visible');
-      setTimeout(() => dom.toast.classList.remove('visible'), 2200);
-    },
-
-    showHintMessage(text) {
-      dom.hintMessage.textContent = text;
-      dom.hintMessage.classList.remove('hidden');
-      setTimeout(() => dom.hintMessage.classList.add('hidden'), 2200);
+      setTimeout(() => dom.toast.classList.remove('visible'), 1800);
     },
 
     updateFinal(state, highScore, message, isNewRecord) {

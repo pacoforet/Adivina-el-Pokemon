@@ -22,9 +22,8 @@ const dom = {
   counterDisplay: document.getElementById('pokemon-counter'),
   streakDisplay: document.getElementById('streak-display'),
   streakBadge: document.getElementById('streak-badge'),
-  hintsDisplay: document.getElementById('hints-display'),
-  timerDisplay: document.getElementById('timer-display'),
   timerWrap: document.getElementById('timer-wrap'),
+  timerFill: document.getElementById('timer-fill'),
 
   highScoreDisplay: document.getElementById('high-score-display'),
   highScoreValue: document.getElementById('high-score-value'),
@@ -35,25 +34,28 @@ const dom = {
   newRecord: document.getElementById('new-record-badge'),
 
   toast: document.getElementById('toast'),
-  hintMessage: document.getElementById('hint-message'),
 
   startButton: document.getElementById('start-button'),
   playAgainButton: document.getElementById('play-again-button'),
-  restartButton: document.getElementById('restart-button'),
-  muteButton: document.getElementById('mute-button'),
-  hintButton: document.getElementById('hint-button'),
+  finishButton: document.getElementById('finish-button'),
   shareButton: document.getElementById('share-button'),
 
-  difficultyRadios: [...document.querySelectorAll('input[name="difficulty"]')],
-  kidModeCheckbox: document.getElementById('kid-mode'),
-  timerCheckbox: document.getElementById('timer-enabled')
+  difficultyButtons: [...document.querySelectorAll('.difficulty-btn')],
+  kidModeButton: document.getElementById('kid-mode-btn'),
+  timerButton: document.getElementById('timer-btn')
 };
 
 const state = createInitialState();
 const settingsRef = { current: resolveSettings(Storage.getSettings()) };
 const ui = createUI(dom);
 const audio = createAudioSystem(() => settingsRef.current);
-const game = createGameController({ state, ui, audio, settingsRef });
+const game = createGameController({
+  state,
+  ui,
+  audio,
+  settingsRef,
+  onReturnToStart: syncHighScore
+});
 
 function syncHighScore() {
   const highScore = Storage.getHighScore();
@@ -61,14 +63,21 @@ function syncHighScore() {
   dom.highScoreValue.textContent = String(highScore);
 }
 
-function readSettingsFromControls() {
-  const checkedDifficulty = dom.difficultyRadios.find((radio) => radio.checked)?.value || 'normal';
-  return resolveSettings({
-    difficulty: checkedDifficulty,
-    kidMode: dom.kidModeCheckbox.checked,
-    timerEnabled: dom.timerCheckbox.checked,
-    muted: settingsRef.current.muted
-  });
+function setDifficulty(value) {
+  const next = resolveSettings({ ...settingsRef.current, difficulty: value });
+  game.setSettings(next);
+  ui.toast(`Dificultad: ${game.difficultyLabel()}`);
+}
+
+function toggleKidMode() {
+  const next = resolveSettings({ ...settingsRef.current, kidMode: !settingsRef.current.kidMode });
+  game.setSettings(next);
+  ui.toast(next.kidMode ? 'Modo Lucas y Fede activado' : 'Modo Lucas y Fede desactivado');
+}
+
+function toggleTimer() {
+  const next = resolveSettings({ ...settingsRef.current, timerEnabled: !settingsRef.current.timerEnabled });
+  game.setSettings(next);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -83,37 +92,24 @@ document.addEventListener('DOMContentLoaded', () => {
     game.startGame({ forceNew: true });
   });
 
-  dom.restartButton.addEventListener('click', () => {
-    game.startGame({ forceNew: true });
+  dom.finishButton.addEventListener('click', () => {
+    game.finishGameToStart();
   });
 
   dom.shareButton.addEventListener('click', () => {
     game.shareScore();
   });
 
-  dom.hintButton.addEventListener('click', () => {
-    game.useHint();
+  dom.difficultyButtons.forEach((button) => {
+    button.addEventListener('click', () => setDifficulty(button.dataset.difficulty));
   });
 
-  dom.muteButton.addEventListener('click', () => {
-    const next = resolveSettings({ ...settingsRef.current, muted: !settingsRef.current.muted });
-    game.setSettings(next);
+  dom.kidModeButton.addEventListener('click', () => {
+    toggleKidMode();
   });
 
-  dom.difficultyRadios.forEach((radio) => {
-    radio.addEventListener('change', () => {
-      game.setSettings(readSettingsFromControls());
-      ui.toast(`Dificultad: ${game.difficultyLabel()}`);
-    });
-  });
-
-  dom.kidModeCheckbox.addEventListener('change', () => {
-    game.setSettings(readSettingsFromControls());
-    ui.toast(dom.kidModeCheckbox.checked ? 'Modo Lucas y Fede activado' : 'Modo normal activado');
-  });
-
-  dom.timerCheckbox.addEventListener('change', () => {
-    game.setSettings(readSettingsFromControls());
+  dom.timerButton.addEventListener('click', () => {
+    toggleTimer();
   });
 
   ui.bindOptions((button) => game.answer(button));
@@ -126,10 +122,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const index = Number(event.key) - 1;
       const button = optionButtons[index];
       if (button && !button.disabled) button.click();
-    }
-
-    if (event.key.toLowerCase() === 'h') {
-      game.useHint();
     }
   });
 });

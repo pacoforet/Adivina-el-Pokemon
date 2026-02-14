@@ -19,10 +19,9 @@ export function createInitialState() {
     answeredCurrentRound: false,
     highScore: 0,
     unlockedAchievements: [],
-    hintUsedThisRound: false,
-    hintsAvailable: 1,
     timer: {
       remainingSec: 0,
+      totalSec: 0,
       intervalId: null
     }
   };

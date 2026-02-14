@@ -57,8 +57,7 @@ export const Storage = {
       score: gameState.score,
       failed: gameState.failed,
       streak: gameState.streak,
-      unlockedAchievements: gameState.unlockedAchievements,
-      hintsAvailable: gameState.hintsAvailable
+      unlockedAchievements: gameState.unlockedAchievements
     });
   },
 

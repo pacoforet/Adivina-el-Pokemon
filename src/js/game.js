@@ -10,16 +10,21 @@ import {
 } from './utils.js';
 import { confettiBurst } from './ui.js';
 
-export function createGameController({ state, ui, audio, settingsRef }) {
+export function createGameController({ state, ui, audio, settingsRef, onReturnToStart }) {
   function currentPokemon() {
     return state.shuffledPokemon[state.currentPokemonIndex];
   }
 
   function resetRoundTimer() {
     clearInterval(state.timer.intervalId);
-    if (!settingsRef.current.timerEnabled) return;
+    if (!settingsRef.current.timerEnabled) {
+      state.timer.totalSec = 1;
+      state.timer.remainingSec = 1;
+      return;
+    }
 
-    state.timer.remainingSec = roundTime(settingsRef.current);
+    state.timer.totalSec = roundTime(settingsRef.current);
+    state.timer.remainingSec = state.timer.totalSec;
     ui.updateHud(state, GAME_CONFIG.totalPokemon, settingsRef.current.timerEnabled);
 
     state.timer.intervalId = setInterval(() => {
@@ -44,8 +49,6 @@ export function createGameController({ state, ui, audio, settingsRef }) {
     }
 
     state.answeredCurrentRound = false;
-    state.hintUsedThisRound = false;
-
     const pokemon = currentPokemon();
     ui.setPokemonImage(
       pokemon.id,
@@ -105,6 +108,7 @@ export function createGameController({ state, ui, audio, settingsRef }) {
     state.failed += 1;
     state.streak = 0;
     ui.showWrong(button);
+    ui.toast('Fallo. Intenta otra opcion.');
     audio.playWrong();
     ui.updateHud(state, GAME_CONFIG.totalPokemon, settingsRef.current.timerEnabled);
 
@@ -138,7 +142,6 @@ export function createGameController({ state, ui, audio, settingsRef }) {
       state.failed = saved.failed;
       state.streak = saved.streak;
       state.unlockedAchievements = saved.unlockedAchievements || Storage.getAchievements();
-      state.hintsAvailable = saved.hintsAvailable || 1;
     } else {
       state.shuffledPokemon = shuffleArray(state.pokemonData);
       state.currentPokemonIndex = 0;
@@ -146,7 +149,6 @@ export function createGameController({ state, ui, audio, settingsRef }) {
       state.failed = 0;
       state.streak = 0;
       state.unlockedAchievements = Storage.getAchievements();
-      state.hintsAvailable = settingsRef.current.kidMode ? 3 : 1;
       Storage.clearGameState();
     }
 
@@ -177,25 +179,12 @@ export function createGameController({ state, ui, audio, settingsRef }) {
     ui.showScreen('end');
   }
 
-  function useHint() {
-    if (state.hintsAvailable <= 0 || state.hintUsedThisRound) {
-      ui.showHintMessage('No tienes pistas disponibles en esta ronda.');
-      return;
-    }
-
-    const options = [...document.querySelectorAll('.option-btn')];
-    const pokemon = currentPokemon();
-    const wrong = options.find((btn) => btn.dataset.name !== pokemon.name && !btn.disabled);
-    if (wrong) {
-      wrong.disabled = true;
-      wrong.dataset.disabledForever = '1';
-    }
-
-    state.hintUsedThisRound = true;
-    state.hintsAvailable -= 1;
-    ui.updateHud(state, GAME_CONFIG.totalPokemon, settingsRef.current.timerEnabled);
-    ui.showHintMessage(`Pista: empieza por ${pokemon.name.slice(0, 1)}`);
-    saveProgress();
+  function finishGameToStart() {
+    clearInterval(state.timer.intervalId);
+    Storage.clearGameState();
+    state.answeredCurrentRound = false;
+    onReturnToStart();
+    ui.showScreen('start');
   }
 
   function answer(button) {
@@ -236,9 +225,9 @@ export function createGameController({ state, ui, audio, settingsRef }) {
   return {
     startGame,
     answer,
-    useHint,
     shareScore,
     setSettings,
-    difficultyLabel
+    difficultyLabel,
+    finishGameToStart
   };
 }
