@@ -1,256 +1,63 @@
-# 🎮 ¿Quién es este Pokémon?
+# Adivina el Pokemon (Definitive Edition)
 
-Un juego interactivo y divertido para adivinar los 150 Pokémon originales de la primera generación. Perfecto para fans de Pokémon de todas las edades.
+Juego web/PWA para adivinar los 150 Pokemon de Kanto.
 
-![Pokémon Game](https://img.shields.io/badge/Pokémon-Generation%201-FFCB05?style=for-the-badge&logo=pokemon&logoColor=white)
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+## Novedades implementadas
 
-## ✨ Características
+- Arquitectura modular (`src/js/*`) con responsabilidades separadas.
+- Dificultad configurable: facil, normal, dificil.
+- Modo infantil "Lucas y Fede" (botones mas grandes, mas tiempo, mas pistas).
+- Temporizador opcional por ronda.
+- Sistema de pistas con tecla rapida `H`.
+- Sistema de logros (racha, score alto, partida perfecta).
+- Bonus por racha cada 5 aciertos.
+- Compartir resultado (Web Share API o portapapeles).
+- PWA reforzada con `offline.html`, cache shell + runtime y cache de assets Pokemon.
+- Compatible con despliegue en subdominio o subruta (`./` en manifest + SW relativo).
+- Calidad: ESLint, Prettier, Vitest (unit), Playwright (E2E), CI GitHub Actions.
 
-- 🎯 **150 Pokémon originales** de la primera generación
-- 📱 **PWA (Progressive Web App)** - instálalo en tu iPhone o Android
-- 🎨 **Interfaz atractiva** con diseño inspirado en Pokémon
-- 🔊 **Efectos de sonido** y voces para cada Pokémon (con botón de silencio)
-- 🏆 **Sistema de puntuación** con mejor puntuación guardada
-- 🔥 **Sistema de rachas** para seguir tu progreso
-- 🎊 **Efectos de confeti** cuando aciertas
-- 💾 **Persistencia de juego** - resume donde lo dejaste
-- 🔄 **Función de reinicio** - empieza de nuevo cuando quieras
-- 🔇 **Control de sonido** - silencia/activa el audio fácilmente
-- 📱 **Totalmente responsive** - funciona en móviles y tablets
-- ♿ **Accesible** - soporte para teclado y lectores de pantalla
-- 🌐 **Funciona offline** - juega sin conexión una vez instalado
+## Estructura
 
-## 📲 Instalación como App (PWA)
+- `index.html`: UI principal sin dependencias CDN criticas.
+- `styles.css`: estilos responsive y accesibles.
+- `src/js/`: logica modular.
+- `service-worker.js`: offline y cache inteligente.
+- `tests/unit`: pruebas unitarias.
+- `tests/e2e`: pruebas end-to-end.
+- `.github/workflows/ci.yml`: pipeline de calidad.
 
-### En iPhone/iPad:
-1. Abre el juego en **Safari** (importante: debe ser Safari)
-2. Toca el botón de **Compartir** (cuadrado con flecha hacia arriba)
-3. Desplázate y selecciona **"Añadir a pantalla de inicio"**
-4. Toca **"Añadir"**
-5. ¡Listo! Ahora tienes el icono en tu pantalla de inicio
-
-### En Android:
-1. Abre el juego en **Chrome**
-2. Toca el menú (tres puntos verticales)
-3. Selecciona **"Añadir a pantalla de inicio"** o **"Instalar app"**
-4. Confirma tocando **"Añadir"**
-5. ¡El juego se instalará como una app!
-
-### Ventajas de instalar:
-- ✅ Funciona offline sin conexión a internet
-- ✅ Acceso rápido desde tu pantalla de inicio
-- ✅ Experiencia de app nativa sin bordes del navegador
-- ✅ Tu progreso se guarda automáticamente
-
-## 🎮 Cómo Jugar
-
-1. **Haz clic en "¡JUGAR AHORA!"** para comenzar el juego
-2. **Observa la silueta** del Pokémon en la pantalla
-3. **Selecciona la respuesta correcta** entre las tres opciones
-4. Si **aciertas**:
-   - ✅ Verás el Pokémon a todo color
-   - 🎉 Se activará confeti
-   - 🔊 Escucharás el grito del Pokémon
-   - 🗣️ Una voz dirá su nombre
-5. Si **fallas**:
-   - ❌ El botón se pondrá rojo
-   - 🔄 Puedes intentar de nuevo con las opciones restantes
-6. **Completa los 150 Pokémon** y compara tu puntuación
-
-### 🎛️ Controles Durante el Juego
-
-**Botones en pantalla:**
-- 🔊/🔇 **Silenciar**: Activa/desactiva todos los sonidos
-- 🔄 **Reiniciar**: Comienza un nuevo juego desde cero
-
-**Atajos de teclado:**
-- **Tecla 1**: Seleccionar primera opción
-- **Tecla 2**: Seleccionar segunda opción
-- **Tecla 3**: Seleccionar tercera opción
-
-### 💾 Persistencia de Juego
-
-El juego guarda automáticamente tu progreso. Si cierras el navegador o la app:
-- ✅ Tu puntuación actual se mantiene
-- ✅ El Pokémon en el que estabas continúa donde lo dejaste
-- ✅ Tu racha y estadísticas se preservan
-- ✅ Al volver, el juego se reanuda automáticamente
-
-Para empezar un juego completamente nuevo, usa el botón **🔄 Reiniciar** durante la partida.
-
-## 🚀 Instalación y Uso
-
-### Opción 1: Uso Directo (Recomendado)
-
-Simplemente abre el archivo `index.html` en tu navegador favorito. ¡No necesitas instalar nada!
+## Desarrollo local
 
 ```bash
-# Clona el repositorio
-git clone https://github.com/tu-usuario/Adivina-el-Pokemon.git
-
-# Navega al directorio
-cd Adivina-el-Pokemon
-
-# Abre index.html en tu navegador
-# En Linux/Mac:
-open index.html
-# En Windows:
-start index.html
+npm install
+npm run lint
+npm run test
+npm run test:e2e
 ```
 
-### Opción 2: Servidor Local
-
-Si prefieres usar un servidor local:
+Para abrir en local rapido:
 
 ```bash
-# Con Python 3
-python -m http.server 8000
-
-# Con Node.js (si tienes http-server instalado)
-npx http-server
-
-# Luego abre http://localhost:8000 en tu navegador
+python3 -m http.server 4173
+# abrir http://127.0.0.1:4173
 ```
 
-## 📁 Estructura del Proyecto
+## Despliegue
 
-```
-Adivina-el-Pokemon/
-│
-├── index.html          # Estructura HTML del juego
-├── styles.css          # Estilos y animaciones
-├── game.js            # Lógica del juego
-└── README.md          # Este archivo
-```
+### Opcion A: `pokemon.pacoforet.com`
 
-## 🎨 Características Técnicas
+Publica los archivos tal cual en la raiz del subdominio.
 
-### 🏗️ Arquitectura
+### Opcion B: `pacoforet.com/pokemon`
 
-El código está organizado en módulos limpios y mantenibles:
+Publica los archivos dentro del directorio `/pokemon/`.
+El proyecto usa rutas relativas y service worker con scope `./`, asi que funciona en subruta.
 
-- **GameState**: Maneja el estado global del juego
-- **AudioSystem**: Sistema de audio con Web Audio API y síntesis de voz
-- **Storage**: Gestión de localStorage para puntuaciones
-- **UIController**: Control de la interfaz de usuario
-- **GameController**: Lógica principal del juego
-- **Utils**: Funciones de utilidad reutilizables
+## Scripts
 
-### 🎯 APIs Utilizadas
-
-- **PokeAPI** - Imágenes oficiales de Pokémon
-- **Web Audio API** - Efectos de sonido sintetizados
-- **Web Speech API** - Síntesis de voz
-- **LocalStorage API** - Guardado de puntuaciones
-
-### ♿ Accesibilidad
-
-- ✅ Etiquetas ARIA para lectores de pantalla
-- ✅ Navegación completa por teclado
-- ✅ Soporte para modo de alto contraste
-- ✅ Respeta preferencias de movimiento reducido
-- ✅ Textos alternativos en imágenes
-
-### 📱 Responsive Design
-
-- ✅ Funciona en pantallas desde 320px hasta 4K
-- ✅ Optimizado para touch en dispositivos móviles
-- ✅ Previene zoom accidental en móviles
-
-## 🎓 Características Educativas
-
-Este proyecto es perfecto para:
-
-- 👶 **Niños**: Aprender los nombres de Pokémon de forma divertida
-- 🎮 **Fans de Pokémon**: Poner a prueba su conocimiento
-- 💻 **Desarrolladores**: Ejemplo de código limpio y bien estructurado
-
-## 🔧 Personalización
-
-### Cambiar el idioma
-
-Para cambiar el idioma del juego, modifica las siguientes líneas en `game.js`:
-
-```javascript
-// Línea ~330
-utterance.lang = 'es-ES'; // Cambia a 'en-US' para inglés
-```
-
-Y actualiza los textos en `index.html`.
-
-### Ajustar dificultad
-
-En `game.js`, modifica la configuración:
-
-```javascript
-const CONFIG = {
-    OPTIONS_PER_QUESTION: 3, // Cambia a 4 para más opciones
-    CORRECT_REVEAL_DELAY: 2500, // Tiempo antes del siguiente (ms)
-    // ...
-};
-```
-
-### Cambiar generación de Pokémon
-
-Para usar Pokémon de otras generaciones, actualiza el array `POKEMON_NAMES` y ajusta `TOTAL_POKEMON` en la configuración.
-
-## 🐛 Solución de Problemas
-
-### El sonido no funciona
-- Asegúrate de interactuar con la página primero (navegadores modernos requieren interacción del usuario)
-- Verifica que el volumen no esté silenciado
-- Comprueba que tu navegador soporte Web Audio API
-
-### Las imágenes no cargan
-- Verifica tu conexión a internet
-- Comprueba que no haya bloqueadores que impidan el acceso a GitHub
-- Algunos Pokémon pueden tardar más en cargar dependiendo de tu conexión
-
-### La mejor puntuación no se guarda
-- Asegúrate de que tu navegador permita el uso de localStorage
-- No uses el modo incógnito (el localStorage se borra al cerrar)
-
-## 🤝 Contribuciones
-
-¡Las contribuciones son bienvenidas! Si quieres mejorar el juego:
-
-1. Fork el proyecto
-2. Crea una rama para tu característica (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📝 Mejoras Futuras
-
-- [ ] Añadir modo multijugador
-- [ ] Incluir todas las generaciones de Pokémon
-- [ ] Sistema de logros y medallas
-- [ ] Modo de dificultad (fácil/medio/difícil)
-- [ ] Temporizador opcional
-- [ ] Compartir puntuación en redes sociales
-- [ ] Modo oscuro
-- [ ] Más idiomas
-
-## 📜 Licencia
-
-Este proyecto está bajo la Licencia MIT. Siéntete libre de usar, modificar y distribuir el código.
-
-## 🙏 Agradecimientos
-
-- **Nintendo/Game Freak/Pokémon Company** - Por crear Pokémon
-- **PokeAPI** - Por proporcionar las imágenes y datos de Pokémon
-- **Tailwind CSS** - Por el framework CSS
-- **Canvas Confetti** - Por los efectos de confeti
-
-## 📧 Contacto
-
-Si tienes preguntas o sugerencias, no dudes en abrir un issue en el repositorio.
-
----
-
-**¡Diviértete jugando y convirtiéndote en un Maestro Pokémon!** 🎯⚡🔥
-
-*Made with ❤️ for Lucas and all Pokémon fans*
+- `npm run lint`
+- `npm run format`
+- `npm run format:check`
+- `npm run test`
+- `npm run test:e2e`
+- `npm run check`

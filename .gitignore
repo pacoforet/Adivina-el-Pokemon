@@ -26,9 +26,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Dependencies (si decides agregar en el futuro)
+# Dependencies
 node_modules/
-package-lock.json
 yarn.lock
 
 # Build outputs (si decides agregar build process)
