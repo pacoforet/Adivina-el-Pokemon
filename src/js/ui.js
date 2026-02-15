@@ -149,7 +149,6 @@ export function createUI(dom) {
         overlay.classList.add('fail');
       }
       if (navigator.vibrate) navigator.vibrate([140, 70, 140]);
-      this.toast('OH NO! INTENTA OTRA!');
     },
 
     showBonus(points) {
