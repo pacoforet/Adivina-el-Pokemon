@@ -212,9 +212,14 @@ export function createGameController({ state, ui, audio, settingsRef, onReturnTo
       navigator.share({ text, title: 'Adivina el Pokemon' }).catch(() => {});
       return;
     }
-    navigator.clipboard.writeText(text).then(() => {
-      ui.toast('Resultado copiado al portapapeles');
-    });
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        ui.toast('Resultado copiado al portapapeles');
+      })
+      .catch(() => {
+        ui.toast('No se pudo copiar el resultado');
+      });
   }
 
   function difficultyLabel() {

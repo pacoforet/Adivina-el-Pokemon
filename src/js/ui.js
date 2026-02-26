@@ -3,6 +3,13 @@ export function confettiBurst() {
   if (!canvas) return;
 
   const ctx = canvas.getContext('2d');
+  const dpr = Math.max(1, window.devicePixelRatio || 1);
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  canvas.width = Math.floor(width * dpr);
+  canvas.height = Math.floor(height * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
   const bursts = [
     { x: 0.2, y: 0.3 },
     { x: 0.8, y: 0.3 },
@@ -12,8 +19,8 @@ export function confettiBurst() {
   ];
   const particles = bursts.flatMap((burst) =>
     Array.from({ length: 80 }, () => ({
-      x: canvas.width * burst.x,
-      y: canvas.height * burst.y,
+      x: width * burst.x,
+      y: height * burst.y,
       vx: (Math.random() - 0.5) * 11,
       vy: Math.random() * -8 - 1.5,
       g: 0.18,
@@ -24,7 +31,7 @@ export function confettiBurst() {
   );
 
   function frame() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, width, height);
     particles.forEach((p) => {
       p.x += p.vx;
       p.y += p.vy;
@@ -37,7 +44,7 @@ export function confettiBurst() {
     if (particles.some((p) => p.life > 0)) {
       requestAnimationFrame(frame);
     } else {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, width, height);
     }
   }
 
@@ -79,7 +86,7 @@ export function createUI(dom) {
     lockOptions(lock) {
       const optionButtons = [...dom.optionsWrap.querySelectorAll('.option-btn')];
       optionButtons.forEach((btn) => {
-        btn.disabled = lock;
+        btn.disabled = lock || btn.dataset.disabledForever === '1';
       });
     },
 
@@ -131,6 +138,8 @@ export function createUI(dom) {
 
     showWrong(button) {
       button.classList.add('wrong');
+      button.dataset.disabledForever = '1';
+      button.disabled = true;
       if (dom.gameCard) {
         dom.gameCard.classList.add('shake', 'bad-hit');
         setTimeout(() => dom.gameCard.classList.remove('shake', 'bad-hit'), 280);
