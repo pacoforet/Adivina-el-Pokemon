@@ -3,94 +3,259 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="description" content="Adivina los Pokemon originales con estilo retro arcade." />
+    <meta
+      name="description"
+      content="Adivina los 1025 Pokémon por su silueta, su grito o escribiendo su nombre. Estilo retro arcade."
+    />
     <meta name="theme-color" content="#102447" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Pokemon Quiz" />
-    <title>Adivina el Pokemon</title>
+    <meta name="apple-mobile-web-app-title" content="Pokémon Quiz" />
+    <title>Adivina el Pokémon</title>
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="./icon.svg" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <canvas id="fx-canvas" width="1200" height="900" aria-hidden="true"></canvas>
+    <canvas id="fx-canvas" aria-hidden="true"></canvas>
     <div id="hit-overlay" aria-hidden="true"></div>
     <main id="game-container" class="layout">
       <section id="start-screen" class="card start-card">
         <div class="hero-brand">
           <p class="pokemon-mini">RETRO ARCADE EDITION</p>
-          <h1 class="pokemon-logo">Gotta Catch em All</h1>
-          <h2 class="lucas-fede-title">Lucas &amp; Fede Edition</h2>
+          <h1 class="pokemon-logo">Adivina el Pokémon</h1>
+          <p class="lucas-fede-title">Lucas &amp; Fede Edition</p>
         </div>
 
-        <img class="trainers-photo" src="./lucas-fede-pokemon.png" alt="Lucas y Fede entrenadores Pokemon" />
+        <img
+          class="trainers-photo"
+          src="./lucas-fede-pokemon.webp"
+          width="640"
+          height="640"
+          alt="Lucas y Fede, entrenadores Pokémon"
+        />
 
-        <div id="high-score-display" class="pill hidden" aria-live="polite">
-          Mejor puntuacion: <strong id="high-score-value">0</strong>/150
+        <div class="pill-row">
+          <span id="high-score-display" class="pill hidden"
+            >Récord: <strong id="high-score-value">0</strong></span
+          >
+          <span class="pill">Pokédex: <strong id="dex-count">0</strong>/1025</span>
+        </div>
+
+        <button id="continue-button" class="primary-btn continue-btn hidden" type="button">
+          Continuar partida<small id="continue-detail"></small>
+        </button>
+
+        <div class="setting-group">
+          <label class="setting-title" for="region-select">Región</label>
+          <select id="region-select" class="select"></select>
         </div>
 
         <div class="setting-group">
-          <p class="setting-title">Dificultad</p>
-          <div id="difficulty-buttons" class="button-row">
-            <button class="setting-btn difficulty-btn" data-difficulty="easy" type="button">Facil</button>
-            <button class="setting-btn difficulty-btn active" data-difficulty="normal" type="button">Normal</button>
-            <button class="setting-btn difficulty-btn" data-difficulty="hard" type="button">Dificil</button>
+          <p class="setting-title" id="mode-title">Modo</p>
+          <div class="button-row" role="group" aria-labelledby="mode-title">
+            <button class="setting-btn mode-btn" data-mode="classic" type="button">Silueta</button>
+            <button class="setting-btn mode-btn" data-mode="cry" type="button">Grito</button>
+            <button class="setting-btn mode-btn" data-mode="write" type="button">Escribir</button>
+            <button class="setting-btn mode-btn" data-mode="review" type="button">
+              Repaso <span id="review-count" class="count"></span>
+            </button>
           </div>
         </div>
 
         <div class="setting-group">
-          <p class="setting-title">Opciones</p>
-          <div class="button-row">
-            <button id="timer-btn" class="setting-btn toggle-btn active" type="button" aria-pressed="true">Temporizador: ON</button>
+          <p class="setting-title" id="rounds-title">Rondas</p>
+          <div class="button-row" role="group" aria-labelledby="rounds-title">
+            <button class="setting-btn rounds-btn" data-rounds="10" type="button">10</button>
+            <button class="setting-btn rounds-btn" data-rounds="20" type="button">20</button>
+            <button class="setting-btn rounds-btn" data-rounds="50" type="button">50</button>
+            <button class="setting-btn rounds-btn" data-rounds="0" type="button">Todas</button>
           </div>
         </div>
 
-        <button id="start-button" class="primary-btn">Jugar ahora</button>
+        <div class="setting-group">
+          <p class="setting-title" id="difficulty-title">Dificultad</p>
+          <div class="button-row" role="group" aria-labelledby="difficulty-title">
+            <button class="setting-btn difficulty-btn" data-difficulty="easy" type="button">
+              Fácil
+            </button>
+            <button class="setting-btn difficulty-btn" data-difficulty="normal" type="button">
+              Normal
+            </button>
+            <button class="setting-btn difficulty-btn" data-difficulty="hard" type="button">
+              Difícil
+            </button>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <p class="setting-title" id="players-title">Jugadores</p>
+          <div class="button-row" role="group" aria-labelledby="players-title">
+            <button class="setting-btn players-btn" data-players="1" type="button">
+              1 jugador
+            </button>
+            <button class="setting-btn players-btn" data-players="2" type="button">
+              2 jugadores
+            </button>
+          </div>
+          <div id="player-names" class="player-names hidden">
+            <input
+              id="player-name-0"
+              class="name-input"
+              maxlength="12"
+              aria-label="Nombre del jugador 1"
+            />
+            <input
+              id="player-name-1"
+              class="name-input"
+              maxlength="12"
+              aria-label="Nombre del jugador 2"
+            />
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <p class="setting-title" id="options-title">Opciones</p>
+          <div class="button-row" role="group" aria-labelledby="options-title">
+            <button id="timer-btn" class="setting-btn" type="button" aria-pressed="true">
+              Tiempo: ON
+            </button>
+            <button id="sound-btn" class="setting-btn" type="button" aria-pressed="true">
+              Sonido: ON
+            </button>
+          </div>
+        </div>
+
+        <div class="start-actions">
+          <button id="start-button" class="primary-btn" type="button">Nueva partida</button>
+          <button id="pokedex-button" class="ghost-btn" type="button">Pokédex y logros</button>
+        </div>
       </section>
 
-      <section id="game-screen" class="card hidden" aria-live="polite">
+      <section id="game-screen" class="card hidden">
         <div id="game-card">
           <header class="hud">
-            <article class="stat-card points"><span class="label">PUNTOS</span><strong id="score-display">0</strong></article>
-            <article class="stat-card fail">
-              <span class="label">FALLOS</span>
-              <strong id="failed-display">0</strong>
-            </article>
-            <article class="stat-card round"><span class="label">RONDA</span><strong id="pokemon-counter">1/150</strong></article>
-            <button id="finish-button" class="stat-card finish" type="button"><span>↻ Terminar</span></button>
+            <div class="stat-card points">
+              <span class="label" id="points-label">PUNTOS</span
+              ><strong id="score-display">0</strong>
+            </div>
+            <div class="stat-card fail">
+              <span class="label">FALLOS</span><strong id="failed-display">0</strong>
+            </div>
+            <div class="stat-card round">
+              <span class="label">RONDA</span><strong id="pokemon-counter">1/20</strong>
+            </div>
+            <button id="exit-button" class="stat-card finish" type="button">
+              <span>⏸ Salir</span>
+            </button>
           </header>
 
-          <div id="timer-wrap" class="timer-wrap" aria-label="Temporizador">
-            <div class="timer-track">
-              <div id="timer-fill" class="timer-fill"></div>
-            </div>
+          <div id="timer-wrap" class="timer-wrap" aria-hidden="true">
+            <div class="timer-track"><div id="timer-fill" class="timer-fill"></div></div>
           </div>
-          <div id="streak-badge" class="streak-banner hidden">Racha x<span id="streak-display">0</span></div>
 
-          <div class="pokemon-wrap" aria-live="polite">
-            <div id="loading-spinner" class="spinner hidden" aria-label="Cargando"></div>
-            <img id="pokemon-image" class="pokemon silhouette" alt="Pokemon a adivinar" src="" />
+          <div class="subbar">
+            <div id="players-bar" class="players-bar hidden"></div>
+            <div id="streak-badge" class="streak-banner hidden">
+              Racha x<span id="streak-display">0</span>
+            </div>
+            <button
+              id="mute-button"
+              class="icon-btn"
+              type="button"
+              aria-pressed="false"
+              aria-label="Silenciar"
+            >
+              🔊
+            </button>
           </div>
+
+          <div class="pokemon-wrap">
+            <div
+              id="loading-spinner"
+              class="spinner hidden"
+              role="status"
+              aria-label="Cargando"
+            ></div>
+            <img
+              id="pokemon-image"
+              class="pokemon silhouette hidden"
+              crossorigin="anonymous"
+              alt="Pokémon a adivinar"
+            />
+            <button
+              id="cry-button"
+              class="cry-btn hidden"
+              type="button"
+              aria-label="Escuchar el grito otra vez"
+            >
+              <span aria-hidden="true">🔊</span><small>Escuchar</small>
+            </button>
+          </div>
+          <div id="reveal-info" class="reveal-info" aria-hidden="true"></div>
 
           <div id="options-container" class="options" role="group" aria-label="Opciones"></div>
+
+          <form id="write-form" class="write-form hidden" autocomplete="off">
+            <input
+              id="write-input"
+              class="write-input"
+              type="text"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              aria-label="Escribe el nombre del Pokémon"
+              placeholder="¿Quién es?"
+            />
+            <div class="write-actions">
+              <button class="primary-btn" type="submit">Comprobar</button>
+              <button id="give-up-button" class="ghost-btn" type="button">Me rindo</button>
+            </div>
+          </form>
+
+          <div id="network-panel" class="network-panel hidden" role="alert">
+            <p id="network-message">No se pudo cargar la imagen.</p>
+            <div class="write-actions">
+              <button id="retry-button" class="primary-btn" type="button">Reintentar</button>
+              <button id="skip-button" class="ghost-btn" type="button">Saltar</button>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section id="end-screen" class="card hidden">
+      <section id="end-screen" class="card end-card hidden">
         <h2>Partida terminada</h2>
-        <p id="congratulations-message"></p>
+        <p id="congratulations-message" class="end-message"></p>
         <p id="final-score" class="big-score"></p>
-        <p id="final-meta"></p>
-        <p id="new-record-badge" class="pill hidden">Nuevo record</p>
+        <div id="final-meta" class="final-meta"></div>
+        <p id="new-record-badge" class="pill hidden">¡Nuevo récord!</p>
         <div class="controls end-controls">
-          <button id="play-again-button" class="primary-btn">Volver a jugar</button>
-          <button id="share-button" class="ghost-btn">Compartir resultado</button>
+          <button id="play-again-button" class="primary-btn" type="button">Volver a jugar</button>
+          <button id="share-button" class="ghost-btn" type="button">Compartir resultado</button>
+          <button id="menu-button" class="ghost-btn" type="button">Menú</button>
         </div>
       </section>
 
-      <p id="toast" class="toast" aria-live="assertive"></p>
+      <section id="pokedex-screen" class="card pokedex-card hidden">
+        <header class="pokedex-header">
+          <h2>Pokédex</h2>
+          <button id="pokedex-back" class="ghost-btn" type="button">Volver</button>
+        </header>
+        <div class="pokedex-controls">
+          <select id="pokedex-region" class="select" aria-label="Región de la Pokédex"></select>
+          <p id="pokedex-progress" class="pokedex-progress"></p>
+        </div>
+        <ul id="pokedex-grid" class="pokedex-grid"></ul>
+        <h2 class="achievements-title">Logros</h2>
+        <ul id="achievements-list" class="achievements-list"></ul>
+      </section>
+
+      <p id="toast" class="toast" role="status" aria-live="polite"></p>
+      <p id="sr-status" class="sr-only" aria-live="polite"></p>
     </main>
 
     <script type="module" src="./src/js/main.js"></script>

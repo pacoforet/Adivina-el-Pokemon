@@ -1,237 +1,379 @@
-import { ACHIEVEMENTS, DIFFICULTY_PRESETS, GAME_CONFIG } from './config.js';
+import { DIFFICULTY_PRESETS, GAME_CONFIG, MODES } from './config.js';
+import { getPokemon, getRegion, poolForRegion } from './pokemon.js';
 import { Storage } from './storage.js';
 import {
+  applyHit,
+  applyMiss,
+  buildQueue,
   buildRoundOptions,
+  createPlayer,
   evaluateAchievements,
   getCongratulationsMessage,
+  highScoreKey,
+  isNameMatch,
   optionsPerQuestion,
-  roundTime,
-  shuffleArray
+  roundTimeMs,
+  winnerMessage
 } from './utils.js';
-import { confettiBurst } from './ui.js';
 
-export function createGameController({ state, ui, audio, settingsRef, onReturnToStart }) {
-  function currentPokemon() {
-    return state.shuffledPokemon[state.currentPokemonIndex];
+export function createGameController({ ui, audio, getSettings, updateSettings, onExit }) {
+  let session = null;
+  let phase = 'idle';
+  let roundToken = 0;
+  let missedThisRound = false;
+  let lastResult = null;
+  let unlocked = Storage.getAchievements();
+  const dex = Storage.getPokedex();
+  const misses = Storage.getMisses();
+  const pending = new Set();
+
+  function later(fn, ms) {
+    const id = setTimeout(() => {
+      pending.delete(id);
+      fn();
+    }, ms);
+    pending.add(id);
   }
 
-  function resetRoundTimer() {
-    clearInterval(state.timer.intervalId);
-    if (!settingsRef.current.timerEnabled) {
-      state.timer.totalSec = 1;
-      state.timer.remainingSec = 1;
-      return;
+  function cancelPending() {
+    roundToken += 1;
+    pending.forEach(clearTimeout);
+    pending.clear();
+    ui.stopTimer();
+  }
+
+  const currentPokemon = () => getPokemon(session.queue[session.index]);
+  const turnIndex = () => session.index % session.players.length;
+  const currentPlayer = () => session.players[turnIndex()];
+  const isSolo = () => session.players.length === 1;
+
+  function save() {
+    if (session.index >= session.queue.length) {
+      Storage.clearGameState();
+    } else {
+      Storage.saveGameState(session);
     }
-
-    state.timer.totalSec = roundTime(settingsRef.current);
-    state.timer.remainingSec = state.timer.totalSec;
-    ui.updateHud(state, GAME_CONFIG.totalPokemon, settingsRef.current.timerEnabled);
-
-    state.timer.intervalId = setInterval(() => {
-      state.timer.remainingSec = Math.max(0, state.timer.remainingSec - 0.05);
-      ui.updateHud(state, GAME_CONFIG.totalPokemon, settingsRef.current.timerEnabled);
-      if (state.timer.remainingSec <= 0) {
-        clearInterval(state.timer.intervalId);
-        onTimeout();
-      }
-    }, 50);
   }
 
-  function saveProgress() {
-    Storage.saveGameState(state);
-    Storage.saveAchievements(state.unlockedAchievements);
+  function refreshHud() {
+    ui.updateHud({
+      player: currentPlayer(),
+      players: session.players,
+      activeIndex: turnIndex(),
+      round: Math.min(session.index + 1, session.queue.length),
+      total: session.queue.length
+    });
   }
 
-  function loadLevel() {
-    if (state.currentPokemonIndex >= GAME_CONFIG.totalPokemon) {
+  function checkAchievements(completed) {
+    const solo = isSolo();
+    const player = session.players[0];
+    const { nextUnlocked, gained } = evaluateAchievements(
+      {
+        streak: solo ? player.streak : 0,
+        hits: solo ? player.hits : 0,
+        failed: player.failed,
+        completed: solo && completed,
+        rounds: session.queue.length,
+        skipped: session.skipped,
+        mode: session.config.mode,
+        dex
+      },
+      unlocked
+    );
+    if (!gained.length) return;
+    unlocked = nextUnlocked;
+    Storage.saveAchievements(unlocked);
+    gained.forEach((a) => ui.toast(`Logro: ${a.title}`));
+  }
+
+  function markMissed(pokemon) {
+    if (missedThisRound) return;
+    missedThisRound = true;
+    misses[pokemon.id] = (misses[pokemon.id] || 0) + 1;
+    Storage.saveMisses(misses);
+  }
+
+  function loadRound(attempt = 0) {
+    cancelPending();
+    if (session.index >= session.queue.length) {
       endGame();
       return;
     }
 
-    state.answeredCurrentRound = false;
+    phase = 'loading';
+    missedThisRound = false;
+    const token = roundToken;
     const pokemon = currentPokemon();
-    ui.setPokemonImage(
-      pokemon.id,
-      () => {
-        const optionCount = optionsPerQuestion(settingsRef.current);
-        const options = buildRoundOptions(state.pokemonData, pokemon, optionCount);
-        ui.renderOptions(options);
-        ui.lockOptions(false);
-        ui.updateHud(state, GAME_CONFIG.totalPokemon, settingsRef.current.timerEnabled);
-        resetRoundTimer();
-      },
-      () => {
-        state.currentPokemonIndex += 1;
-        loadLevel();
-      }
-    );
+    ui.prepareRound(session.config.mode);
+    refreshHud();
+    ui.loadImage(pokemon.id, {
+      onLoad: () => token === roundToken && startRound(pokemon),
+      onError: () => token === roundToken && handleImageError(attempt)
+    });
   }
 
-  function applyCorrect(button) {
-    const wasMilestone = state.streak > 0 && state.streak % GAME_CONFIG.bonusEveryStreak === 0;
+  function handleImageError(attempt) {
+    if (attempt < GAME_CONFIG.imageRetries && navigator.onLine !== false) {
+      later(() => loadRound(attempt + 1), GAME_CONFIG.imageRetryDelayMs);
+      return;
+    }
+    phase = 'paused';
+    ui.showNetworkError(navigator.onLine === false);
+  }
 
-    state.score += 1;
-    state.streak += 1;
+  function startRound(pokemon) {
+    const { mode, difficulty, timerEnabled, region } = session.config;
+    phase = 'answering';
 
-    if (wasMilestone) {
-      state.score += GAME_CONFIG.bonusScore;
-      ui.showBonus(GAME_CONFIG.bonusScore);
+    if (mode === 'write') {
+      ui.showWriteInput();
+    } else {
+      const options = buildRoundOptions(
+        poolForRegion(region),
+        pokemon,
+        optionsPerQuestion(difficulty),
+        DIFFICULTY_PRESETS[difficulty].similarShare
+      );
+      ui.renderOptions(options);
     }
 
-    ui.showCorrect(button);
-    ui.revealPokemon();
-    ui.lockOptions(true);
-    confettiBurst();
-    audio.playCorrect();
+    if (mode === 'cry') {
+      const token = roundToken;
+      ui.showCryPrompt();
+      audio.playCry(pokemon.id, {
+        onError: () => {
+          if (token !== roundToken) return;
+          ui.showSilhouette();
+          ui.toast('Sin grito: ¡adivina por la silueta!');
+        }
+      });
+    } else {
+      ui.showSilhouette();
+    }
 
-    setTimeout(() => {
-      audio.playPokemonCry(currentPokemon().id);
-      audio.speakPokemonName(currentPokemon().name);
-    }, 220);
+    if (timerEnabled) {
+      const ms = roundTimeMs(difficulty, mode);
+      ui.startTimer(ms);
+      later(() => missRound('¡Tiempo!'), ms);
+    }
 
-    clearInterval(state.timer.intervalId);
-
-    const { nextUnlocked, gained } = evaluateAchievements(state, state.unlockedAchievements);
-    state.unlockedAchievements = nextUnlocked;
-    gained.forEach((a) => ui.showAchievement(a));
-
-    saveProgress();
-
-    setTimeout(() => {
-      state.currentPokemonIndex += 1;
-      saveProgress();
-      loadLevel();
-    }, GAME_CONFIG.revealDelayMs);
+    const nextId = session.queue[session.index + 1];
+    if (nextId) ui.preloadImage(nextId);
   }
 
-  function applyWrong(button) {
-    state.failed += 1;
-    state.streak = 0;
+  function correct(button) {
+    const pokemon = currentPokemon();
+    const player = currentPlayer();
+    cancelPending();
+    phase = 'revealing';
+
+    const bonus = applyHit(player);
+    if (!missedThisRound && misses[pokemon.id]) {
+      misses[pokemon.id] -= 1;
+      if (misses[pokemon.id] <= 0) delete misses[pokemon.id];
+      Storage.saveMisses(misses);
+    }
+    dex.add(pokemon.id);
+    Storage.savePokedex(dex);
+
+    ui.showCorrect(button, pokemon);
+    if (bonus) ui.toast(`+${bonus} bonus por racha de ${player.streak}`);
+    audio.playCorrect();
+    later(() => audio.announce(pokemon.id, pokemon.name), 220);
+
+    refreshHud();
+    checkAchievements(false);
+    session.index += 1;
+    save();
+    later(() => loadRound(), GAME_CONFIG.revealDelayMs);
+  }
+
+  function wrong(button) {
+    const pokemon = currentPokemon();
+    applyMiss(currentPlayer());
+    markMissed(pokemon);
     ui.showWrong(button);
     audio.playWrong();
-    ui.updateHud(state, GAME_CONFIG.totalPokemon, settingsRef.current.timerEnabled);
+    refreshHud();
+    save();
 
-    setTimeout(() => {
-      state.answeredCurrentRound = false;
-      ui.lockOptions(false);
+    phase = 'cooldown';
+    later(() => {
+      if (phase !== 'cooldown') return;
+      phase = 'answering';
+      ui.unlockOptions();
     }, GAME_CONFIG.wrongShakeDurationMs);
-
-    saveProgress();
   }
 
-  function onTimeout() {
-    if (state.answeredCurrentRound) return;
-    state.answeredCurrentRound = true;
-    state.failed += 1;
-    state.streak = 0;
-    ui.toast('Tiempo agotado');
-    state.currentPokemonIndex += 1;
-    saveProgress();
-    loadLevel();
+  function missRound(message) {
+    if (phase !== 'answering' && phase !== 'cooldown') return;
+    const pokemon = currentPokemon();
+    cancelPending();
+    phase = 'revealing';
+
+    applyMiss(currentPlayer());
+    markMissed(pokemon);
+    ui.showMissed(pokemon);
+    ui.toast(`${message} Era ${pokemon.name}`);
+    later(() => audio.announce(pokemon.id, pokemon.name), 300);
+
+    refreshHud();
+    session.index += 1;
+    save();
+    later(() => loadRound(), GAME_CONFIG.missedRevealDelayMs);
   }
 
-  function startGame({ forceNew = false } = {}) {
+  function begin() {
     audio.init();
+    ui.setupGame(session.config, session.players);
+    ui.showScreen('game');
+    loadRound();
+  }
 
-    const saved = !forceNew ? Storage.loadGameState() : null;
-    if (saved && saved.currentPokemonIndex < GAME_CONFIG.totalPokemon) {
-      state.shuffledPokemon = saved.shuffledPokemon;
-      state.currentPokemonIndex = saved.currentPokemonIndex;
-      state.score = saved.score;
-      state.failed = saved.failed;
-      state.streak = saved.streak;
-      state.unlockedAchievements = saved.unlockedAchievements || Storage.getAchievements();
-    } else {
-      state.shuffledPokemon = shuffleArray(state.pokemonData);
-      state.currentPokemonIndex = 0;
-      state.score = 0;
-      state.failed = 0;
-      state.streak = 0;
-      state.unlockedAchievements = Storage.getAchievements();
-      Storage.clearGameState();
+  function startNew() {
+    const settings = getSettings();
+    const { region, rounds, mode, difficulty, timerEnabled, playerCount, playerNames } = settings;
+
+    if (mode === 'cry' && !audio.canPlayCries) {
+      ui.toast('Este navegador no reproduce los gritos');
+      return;
+    }
+    if (mode === 'cry' && settings.muted) {
+      updateSettings({ muted: false });
+      ui.toast('Sonido activado para el modo Grito');
     }
 
-    ui.showScreen('game');
-    ui.updateHud(state, GAME_CONFIG.totalPokemon, settingsRef.current.timerEnabled);
-    loadLevel();
+    const queue = buildQueue({ pool: poolForRegion(region), rounds, mode, misses });
+    if (!queue.length) {
+      ui.toast('No tienes fallos que repasar en esta región');
+      return;
+    }
+
+    session = {
+      config: { region, rounds, mode, difficulty, timerEnabled },
+      queue,
+      index: 0,
+      skipped: 0,
+      players: playerNames.slice(0, playerCount).map(createPlayer)
+    };
+    save();
+    begin();
+  }
+
+  function resume() {
+    const saved = Storage.loadGameState();
+    if (!saved) {
+      startNew();
+      return;
+    }
+    session = saved;
+    begin();
   }
 
   function endGame() {
-    clearInterval(state.timer.intervalId);
+    cancelPending();
+    phase = 'idle';
     Storage.clearGameState();
 
-    const isPerfect = state.score >= GAME_CONFIG.totalPokemon && state.failed === 0;
-    if (isPerfect && !state.unlockedAchievements.includes(ACHIEVEMENTS.PERFECT.id)) {
-      state.unlockedAchievements = [...new Set([...state.unlockedAchievements, ACHIEVEMENTS.PERFECT.id])];
-      Storage.saveAchievements(state.unlockedAchievements);
+    const total = session.queue.length;
+    const result = {
+      config: session.config,
+      players: session.players,
+      total,
+      skipped: session.skipped
+    };
+
+    if (isSolo()) {
+      const player = session.players[0];
+      const key = highScoreKey(session.config);
+      result.isNewRecord = Storage.setHighScore(key, player.points);
+      result.best = Storage.getHighScore(key);
+      result.message = getCongratulationsMessage(player.hits, total);
+      checkAchievements(true);
+    } else {
+      result.message = winnerMessage(session.players);
     }
 
-    const isNewRecord = Storage.setHighScore(state.score);
-    const highScore = Storage.getHighScore();
-    ui.updateFinal(
-      state,
-      highScore,
-      getCongratulationsMessage(state.score, GAME_CONFIG.totalPokemon),
-      isNewRecord
-    );
-
+    lastResult = result;
+    ui.showEnd(result);
     ui.showScreen('end');
   }
 
-  function finishGameToStart() {
-    clearInterval(state.timer.intervalId);
-    Storage.clearGameState();
-    state.answeredCurrentRound = false;
-    onReturnToStart();
+  function exitToStart() {
+    cancelPending();
+    phase = 'idle';
+    audio.stop();
+    ui.cancelImage();
+    ui.clearEffects();
+    if (session) save();
+    onExit();
     ui.showScreen('start');
   }
 
-  function answer(button) {
-    if (state.answeredCurrentRound || button.disabled) return;
-    state.answeredCurrentRound = true;
-
-    if (button.dataset.name === currentPokemon().name) {
-      applyCorrect(button);
-    } else {
-      applyWrong(button);
-    }
-  }
-
-  function setSettings(nextSettings) {
-    settingsRef.current = nextSettings;
-    Storage.saveSettings(nextSettings);
-    ui.applySettings(nextSettings);
-    if (!document.getElementById('game-screen').classList.contains('hidden')) {
-      ui.updateHud(state, GAME_CONFIG.totalPokemon, settingsRef.current.timerEnabled);
-    }
-  }
-
   function shareScore() {
-    const text = `He conseguido ${state.score}/150 en Adivina el Pokemon. ¿Me superas?`;
+    if (!lastResult) return;
+    const { config, players, total } = lastResult;
+    const where = `${getRegion(config.region).label}, modo ${MODES[config.mode].label}`;
+    const text =
+      players.length === 1
+        ? `He acertado ${players[0].hits}/${total} Pokémon (${where}) en Adivina el Pokémon. ¿Me superas?`
+        : `${players[0].name} ${players[0].points} - ${players[1].points} ${players[1].name} en Adivina el Pokémon (${where}).`;
+    const url = `${location.origin}${location.pathname}`;
+
     if (navigator.share) {
-      navigator.share({ text, title: 'Adivina el Pokemon' }).catch(() => {});
+      navigator.share({ title: 'Adivina el Pokémon', text, url }).catch(() => {});
       return;
     }
     navigator.clipboard
-      .writeText(text)
-      .then(() => {
-        ui.toast('Resultado copiado al portapapeles');
-      })
-      .catch(() => {
-        ui.toast('No se pudo copiar el resultado');
-      });
-  }
-
-  function difficultyLabel() {
-    return DIFFICULTY_PRESETS[settingsRef.current.difficulty].label;
+      ?.writeText(`${text} ${url}`)
+      .then(() => ui.toast('Resultado copiado al portapapeles'))
+      .catch(() => ui.toast('No se pudo copiar el resultado'));
   }
 
   return {
-    startGame,
-    answer,
+    startNew,
+    resume,
+    exitToStart,
     shareScore,
-    setSettings,
-    difficultyLabel,
-    finishGameToStart
+
+    answerOption(button) {
+      if (phase !== 'answering' || button.disabled) return;
+      if (button.dataset.name === currentPokemon().name) correct(button);
+      else wrong(button);
+    },
+
+    answerText(text) {
+      if (phase !== 'answering' || !text.trim()) return;
+      if (isNameMatch(text, currentPokemon().name)) correct(null);
+      else wrong(null);
+    },
+
+    giveUp() {
+      missRound('¡Te rendiste!');
+    },
+
+    replayCry() {
+      if (session && (phase === 'answering' || phase === 'cooldown'))
+        audio.playCry(currentPokemon().id);
+    },
+
+    retryImage() {
+      if (phase === 'paused') loadRound();
+    },
+
+    skipPokemon() {
+      if (phase !== 'paused') return;
+      session.skipped += 1;
+      session.index += 1;
+      save();
+      loadRound();
+    },
+
+    isPlaying: () => phase !== 'idle',
+    savedGame: () => Storage.loadGameState(),
+    pokedex: () => dex,
+    achievements: () => unlocked,
+    reviewCount: (region) => poolForRegion(region).filter((p) => misses[p.id] > 0).length
   };
 }

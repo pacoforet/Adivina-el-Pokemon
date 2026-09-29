@@ -1,80 +1,112 @@
 import { STORAGE_KEYS } from './config.js';
 import { resolveSettings } from './utils.js';
 
-function getParsed(key, fallback) {
+function read(key, fallback) {
   try {
     const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : fallback;
-  } catch (_error) {
+  } catch {
     return fallback;
   }
 }
 
-function setParsed(key, value) {
+function write(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
     return true;
-  } catch (_error) {
+  } catch {
     return false;
   }
 }
 
+function remove(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Almacenamiento no disponible (modo privado); no hay nada que borrar.
+  }
+}
+
+function isValidSession(session) {
+  return (
+    session &&
+    Array.isArray(session.queue) &&
+    session.queue.length > 0 &&
+    session.queue.every((id) => Number.isInteger(id) && id >= 1 && id <= 1025) &&
+    Number.isInteger(session.index) &&
+    session.index >= 0 &&
+    session.index < session.queue.length &&
+    Array.isArray(session.players) &&
+    session.players.length >= 1 &&
+    session.players.length <= 2 &&
+    session.config
+  );
+}
+
 export const Storage = {
-  getHighScore() {
-    const score = Number(localStorage.getItem(STORAGE_KEYS.HIGH_SCORE) || 0);
-    return Number.isNaN(score) ? 0 : score;
+  getHighScores() {
+    const scores = read(STORAGE_KEYS.HIGH_SCORES, null);
+    if (scores) return scores;
+    const legacy = Number(read(STORAGE_KEYS.LEGACY_HIGH_SCORE, 0));
+    return legacy > 0 ? { 'kanto|0|classic|normal': legacy } : {};
   },
 
-  setHighScore(score) {
-    const current = this.getHighScore();
-    if (score > current) {
-      try {
-        localStorage.setItem(STORAGE_KEYS.HIGH_SCORE, String(score));
-        return true;
-      } catch (_error) {
-        return false;
-      }
-    }
-    return false;
+  getHighScore(key) {
+    return Number(this.getHighScores()[key]) || 0;
+  },
+
+  setHighScore(key, score) {
+    const scores = this.getHighScores();
+    if (score <= (scores[key] || 0)) return false;
+    return write(STORAGE_KEYS.HIGH_SCORES, { ...scores, [key]: score });
   },
 
   getSettings() {
-    return resolveSettings(getParsed(STORAGE_KEYS.SETTINGS, {}));
+    return resolveSettings(read(STORAGE_KEYS.SETTINGS, {}));
   },
 
   saveSettings(settings) {
-    return setParsed(STORAGE_KEYS.SETTINGS, settings);
+    return write(STORAGE_KEYS.SETTINGS, settings);
   },
 
   loadGameState() {
-    return getParsed(STORAGE_KEYS.GAME_STATE, null);
+    const session = read(STORAGE_KEYS.GAME_STATE, null);
+    return isValidSession(session) ? session : null;
   },
 
-  saveGameState(gameState) {
-    return setParsed(STORAGE_KEYS.GAME_STATE, {
-      shuffledPokemon: gameState.shuffledPokemon,
-      currentPokemonIndex: gameState.currentPokemonIndex,
-      score: gameState.score,
-      failed: gameState.failed,
-      streak: gameState.streak,
-      unlockedAchievements: gameState.unlockedAchievements
-    });
+  saveGameState(session) {
+    return write(STORAGE_KEYS.GAME_STATE, session);
   },
 
   clearGameState() {
-    try {
-      localStorage.removeItem(STORAGE_KEYS.GAME_STATE);
-    } catch (_error) {
-      return false;
-    }
-    return true;
+    remove(STORAGE_KEYS.GAME_STATE);
+    remove(STORAGE_KEYS.LEGACY_GAME_STATE);
   },
 
   getAchievements() {
-    return getParsed(STORAGE_KEYS.ACHIEVEMENTS, []);
+    const items = read(STORAGE_KEYS.ACHIEVEMENTS, []);
+    return Array.isArray(items) ? items : [];
   },
 
   saveAchievements(items) {
-    return setParsed(STORAGE_KEYS.ACHIEVEMENTS, items);
+    return write(STORAGE_KEYS.ACHIEVEMENTS, items);
+  },
+
+  getPokedex() {
+    const ids = read(STORAGE_KEYS.POKEDEX, []);
+    return new Set(Array.isArray(ids) ? ids : []);
+  },
+
+  savePokedex(set) {
+    return write(STORAGE_KEYS.POKEDEX, [...set]);
+  },
+
+  getMisses() {
+    const misses = read(STORAGE_KEYS.MISSES, {});
+    return misses && typeof misses === 'object' ? misses : {};
+  },
+
+  saveMisses(misses) {
+    return write(STORAGE_KEYS.MISSES, misses);
   }
 };
